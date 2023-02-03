@@ -1,0 +1,13 @@
+---
+name: "JSON to Markdown table"
+description: "Takes a JSON object and converts it to a Markdown table"
+inputs:
+  json:
+    description: "The JSON object to convert to a Markdown table"
+    required: true
+outputs:
+  table:
+    description: "The Markdown table that was generated from the JSON object"
+runs:
+  using: "node16"
+  main: "index.js"
