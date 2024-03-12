@@ -1,5 +1,8 @@
 name: "JSON to Markdown table"
 description: "Converts a given JSON object to a Markdown table"
+branding:
+  icon: 'table'
+  color: 'green'
 inputs:
   json:
     description: "The JSON object to convert to a Markdown table"
