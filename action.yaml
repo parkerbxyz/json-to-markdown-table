@@ -1,6 +1,6 @@
 ---
 name: "JSON to Markdown table"
-description: "Takes a JSON object and converts it to a Markdown table"
+description: "Converts a given JSON object to a Markdown table"
 inputs:
   json:
     description: "The JSON object to convert to a Markdown table"
