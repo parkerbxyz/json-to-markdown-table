@@ -1,7 +1,7 @@
 {
   "name": "json-to-markdown-table",
   "description": "Converts a given JSON object to a Markdown table",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": "Parker Brown",
   "license": "MIT",
   "type": "module",
