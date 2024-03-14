@@ -7,6 +7,10 @@ inputs:
   json:
     description: "The JSON object to convert to a Markdown table"
     required: true
+  align-pipes:
+    description: "Set to 'false' if you do not want the table delimiters aligned"
+    default: "true"
+    required: false
 outputs:
   table:
     description: "The Markdown table that was generated from the JSON object"

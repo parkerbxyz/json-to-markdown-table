@@ -1,0 +1,11 @@
+overrides:
+  # The following overrides are for StandardJS compatibility
+  - files: ["*.js", "*.mjs", "*.ts"]
+    options:
+      trailingComma: "none"
+      semi: false
+      singleQuote: true
+  # Use single quotes in GitHub workflow files
+  - files: ".github/workflows/*.(yml|yaml)"
+    options:
+      singleQuote: true
