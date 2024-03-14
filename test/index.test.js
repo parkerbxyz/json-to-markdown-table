@@ -1,6 +1,5 @@
 import core from '@actions/core'
 import test from 'ava'
-import { readFileSync } from 'fs'
 import sinon from 'sinon'
 import tmp from 'tmp'
 import { run } from '../index.js'
@@ -13,6 +12,11 @@ const json = [
 
 test('A Markdown table is generated from the provided JSON', async (t) => {
   t.snapshot(await run(core, json))
+})
+
+test('A Markdown table without aligned delimiters is generated from the provided JSON', async (t) => {
+  const alignPipes = false
+  t.snapshot(await run(core, json, alignPipes))
 })
 
 test.serial('Summary file is generated with expected content', async (t) => {
