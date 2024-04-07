@@ -1820,669 +1820,6 @@ function isLoopbackAddress(host) {
 
 /***/ }),
 
-/***/ 8387:
-/***/ ((__unused_webpack_module, exports) => {
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.lowerCase = exports.localeLowerCase = void 0;
-/**
- * Source: ftp://ftp.unicode.org/Public/UCD/latest/ucd/SpecialCasing.txt
- */
-var SUPPORTED_LOCALE = {
-    tr: {
-        regexp: /\u0130|\u0049|\u0049\u0307/g,
-        map: {
-            İ: "\u0069",
-            I: "\u0131",
-            İ: "\u0069",
-        },
-    },
-    az: {
-        regexp: /\u0130/g,
-        map: {
-            İ: "\u0069",
-            I: "\u0131",
-            İ: "\u0069",
-        },
-    },
-    lt: {
-        regexp: /\u0049|\u004A|\u012E|\u00CC|\u00CD|\u0128/g,
-        map: {
-            I: "\u0069\u0307",
-            J: "\u006A\u0307",
-            Į: "\u012F\u0307",
-            Ì: "\u0069\u0307\u0300",
-            Í: "\u0069\u0307\u0301",
-            Ĩ: "\u0069\u0307\u0303",
-        },
-    },
-};
-/**
- * Localized lower case.
- */
-function localeLowerCase(str, locale) {
-    var lang = SUPPORTED_LOCALE[locale.toLowerCase()];
-    if (lang)
-        return lowerCase(str.replace(lang.regexp, function (m) { return lang.map[m]; }));
-    return lowerCase(str);
-}
-exports.localeLowerCase = localeLowerCase;
-/**
- * Lower case as a function.
- */
-function lowerCase(str) {
-    return str.toLowerCase();
-}
-exports.lowerCase = lowerCase;
-//# sourceMappingURL=index.js.map
-
-/***/ }),
-
-/***/ 397:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.noCase = void 0;
-var lower_case_1 = __nccwpck_require__(8387);
-// Support camel case ("camelCase" -> "camel Case" and "CAMELCase" -> "CAMEL Case").
-var DEFAULT_SPLIT_REGEXP = [/([a-z0-9])([A-Z])/g, /([A-Z])([A-Z][a-z])/g];
-// Remove all non-word characters.
-var DEFAULT_STRIP_REGEXP = /[^A-Z0-9]+/gi;
-/**
- * Normalize the string into something other libraries can manipulate easier.
- */
-function noCase(input, options) {
-    if (options === void 0) { options = {}; }
-    var _a = options.splitRegexp, splitRegexp = _a === void 0 ? DEFAULT_SPLIT_REGEXP : _a, _b = options.stripRegexp, stripRegexp = _b === void 0 ? DEFAULT_STRIP_REGEXP : _b, _c = options.transform, transform = _c === void 0 ? lower_case_1.lowerCase : _c, _d = options.delimiter, delimiter = _d === void 0 ? " " : _d;
-    var result = replace(replace(input, splitRegexp, "$1\0$2"), stripRegexp, "\0");
-    var start = 0;
-    var end = result.length;
-    // Trim the delimiter from around the output string.
-    while (result.charAt(start) === "\0")
-        start++;
-    while (result.charAt(end - 1) === "\0")
-        end--;
-    // Transform each token independently.
-    return result.slice(start, end).split("\0").map(transform).join(delimiter);
-}
-exports.noCase = noCase;
-/**
- * Replace `re` in the input string with the replacement value.
- */
-function replace(input, re, value) {
-    if (re instanceof RegExp)
-        return input.replace(re, value);
-    return re.reduce(function (input, re) { return input.replace(re, value); }, input);
-}
-//# sourceMappingURL=index.js.map
-
-/***/ }),
-
-/***/ 9229:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-var __webpack_unused_export__;
-
-__webpack_unused_export__ = ({ value: true });
-exports.G8 = __webpack_unused_export__ = void 0;
-var tslib_1 = __nccwpck_require__(4351);
-var no_case_1 = __nccwpck_require__(397);
-var upper_case_first_1 = __nccwpck_require__(6256);
-function sentenceCaseTransform(input, index) {
-    var result = input.toLowerCase();
-    if (index === 0)
-        return upper_case_first_1.upperCaseFirst(result);
-    return result;
-}
-__webpack_unused_export__ = sentenceCaseTransform;
-function sentenceCase(input, options) {
-    if (options === void 0) { options = {}; }
-    return no_case_1.noCase(input, tslib_1.__assign({ delimiter: " ", transform: sentenceCaseTransform }, options));
-}
-exports.G8 = sentenceCase;
-//# sourceMappingURL=index.js.map
-
-/***/ }),
-
-/***/ 3624:
-/***/ ((module) => {
-
-
-
-split.split = split
-split.width = width
-
-module.exports = split
-
-function split(text, columns){
-	const rows = []
-	let rowBuffer = ''
-	let rowBufferLength = 0
-	let wordBuffer = ''
-	let wordBufferLength = 0
-	let spillBuffer = ''
-	let spillBufferLength = 0
-
-	for (const char of text.normalize()){
-		const code = char.codePointAt()
-
-		if (code <= 32) {
-			if (spillBufferLength > 0) {
-				rows.push(rowBuffer)
-
-				if (wordBufferLength + spillBufferLength === columns || code === 10) {
-					rows.push(wordBuffer+spillBuffer)
-
-					rowBuffer = ''
-					rowBufferLength = 0
-				} else {
-					rowBuffer = wordBuffer+spillBuffer+char
-					rowBufferLength = wordBufferLength + spillBufferLength + 1
-				}
-
-				spillBuffer = ''
-				spillBufferLength = 0
-			} else {
-				if (rowBufferLength + wordBufferLength === columns || code === 10) {
-					rows.push(rowBuffer+wordBuffer)
-
-					rowBuffer = ''
-					rowBufferLength = 0
-				} else {
-					rowBuffer += wordBuffer+char
-					rowBufferLength += wordBufferLength + 1
-				}
-			}
-
-			wordBuffer = ''
-			wordBufferLength = 0
-		} else {
-			if (rowBufferLength + wordBufferLength < columns) {
-				wordBuffer += char
-				wordBufferLength++
-			} else if (wordBufferLength + spillBufferLength === columns) {
-				rows.push(rowBuffer+wordBuffer)
-
-				rowBuffer = ''
-				rowBufferLength = 0
-
-				if (spillBufferLength === columns) {
-					rows.push(spillBuffer)
-
-					wordBuffer = char
-					wordBufferLength = 1
-				} else {
-					wordBuffer = spillBuffer+char
-					wordBufferLength = spillBufferLength + 1
-				}
-
-				spillBuffer = ''
-				spillBufferLength = 0
-			} else {
-				spillBuffer += char
-				spillBufferLength++
-			}
-		}
-	}
-
-	if (spillBufferLength > 0) {
-		rows.push(rowBuffer, wordBuffer+spillBuffer)
-	} else {
-		rows.push(rowBuffer+wordBuffer)
-	}
-
-	return rows
-}
-
-function width(text, max){
-	let i = 0
-	let u = 0
-
-	for (const char of text.normalize()) {
-		if (char === '\n') {
-			u = i > u ? i : u
-			i = 0
-		} else if (++i === max) {
-			return max
-		}
-	}
-
-	return i > u ? i : u
-}
-
-
-/***/ }),
-
-/***/ 4351:
-/***/ ((module) => {
-
-/******************************************************************************
-Copyright (c) Microsoft Corporation.
-
-Permission to use, copy, modify, and/or distribute this software for any
-purpose with or without fee is hereby granted.
-
-THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
-REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
-AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
-INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
-LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-PERFORMANCE OF THIS SOFTWARE.
-***************************************************************************** */
-/* global global, define, Symbol, Reflect, Promise, SuppressedError */
-var __extends;
-var __assign;
-var __rest;
-var __decorate;
-var __param;
-var __esDecorate;
-var __runInitializers;
-var __propKey;
-var __setFunctionName;
-var __metadata;
-var __awaiter;
-var __generator;
-var __exportStar;
-var __values;
-var __read;
-var __spread;
-var __spreadArrays;
-var __spreadArray;
-var __await;
-var __asyncGenerator;
-var __asyncDelegator;
-var __asyncValues;
-var __makeTemplateObject;
-var __importStar;
-var __importDefault;
-var __classPrivateFieldGet;
-var __classPrivateFieldSet;
-var __classPrivateFieldIn;
-var __createBinding;
-var __addDisposableResource;
-var __disposeResources;
-(function (factory) {
-    var root = typeof global === "object" ? global : typeof self === "object" ? self : typeof this === "object" ? this : {};
-    if (typeof define === "function" && define.amd) {
-        define("tslib", ["exports"], function (exports) { factory(createExporter(root, createExporter(exports))); });
-    }
-    else if ( true && typeof module.exports === "object") {
-        factory(createExporter(root, createExporter(module.exports)));
-    }
-    else {
-        factory(createExporter(root));
-    }
-    function createExporter(exports, previous) {
-        if (exports !== root) {
-            if (typeof Object.create === "function") {
-                Object.defineProperty(exports, "__esModule", { value: true });
-            }
-            else {
-                exports.__esModule = true;
-            }
-        }
-        return function (id, v) { return exports[id] = previous ? previous(id, v) : v; };
-    }
-})
-(function (exporter) {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-
-    __extends = function (d, b) {
-        if (typeof b !== "function" && b !== null)
-            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-
-    __assign = Object.assign || function (t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
-        }
-        return t;
-    };
-
-    __rest = function (s, e) {
-        var t = {};
-        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
-            t[p] = s[p];
-        if (s != null && typeof Object.getOwnPropertySymbols === "function")
-            for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
-                if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
-                    t[p[i]] = s[p[i]];
-            }
-        return t;
-    };
-
-    __decorate = function (decorators, target, key, desc) {
-        var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-        if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-        else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-        return c > 3 && r && Object.defineProperty(target, key, r), r;
-    };
-
-    __param = function (paramIndex, decorator) {
-        return function (target, key) { decorator(target, key, paramIndex); }
-    };
-
-    __esDecorate = function (ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
-        function accept(f) { if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected"); return f; }
-        var kind = contextIn.kind, key = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
-        var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
-        var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
-        var _, done = false;
-        for (var i = decorators.length - 1; i >= 0; i--) {
-            var context = {};
-            for (var p in contextIn) context[p] = p === "access" ? {} : contextIn[p];
-            for (var p in contextIn.access) context.access[p] = contextIn.access[p];
-            context.addInitializer = function (f) { if (done) throw new TypeError("Cannot add initializers after decoration has completed"); extraInitializers.push(accept(f || null)); };
-            var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key], context);
-            if (kind === "accessor") {
-                if (result === void 0) continue;
-                if (result === null || typeof result !== "object") throw new TypeError("Object expected");
-                if (_ = accept(result.get)) descriptor.get = _;
-                if (_ = accept(result.set)) descriptor.set = _;
-                if (_ = accept(result.init)) initializers.unshift(_);
-            }
-            else if (_ = accept(result)) {
-                if (kind === "field") initializers.unshift(_);
-                else descriptor[key] = _;
-            }
-        }
-        if (target) Object.defineProperty(target, contextIn.name, descriptor);
-        done = true;
-    };
-
-    __runInitializers = function (thisArg, initializers, value) {
-        var useValue = arguments.length > 2;
-        for (var i = 0; i < initializers.length; i++) {
-            value = useValue ? initializers[i].call(thisArg, value) : initializers[i].call(thisArg);
-        }
-        return useValue ? value : void 0;
-    };
-
-    __propKey = function (x) {
-        return typeof x === "symbol" ? x : "".concat(x);
-    };
-
-    __setFunctionName = function (f, name, prefix) {
-        if (typeof name === "symbol") name = name.description ? "[".concat(name.description, "]") : "";
-        return Object.defineProperty(f, "name", { configurable: true, value: prefix ? "".concat(prefix, " ", name) : name });
-    };
-
-    __metadata = function (metadataKey, metadataValue) {
-        if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(metadataKey, metadataValue);
-    };
-
-    __awaiter = function (thisArg, _arguments, P, generator) {
-        function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-        return new (P || (P = Promise))(function (resolve, reject) {
-            function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-            function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-            function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-            step((generator = generator.apply(thisArg, _arguments || [])).next());
-        });
-    };
-
-    __generator = function (thisArg, body) {
-        var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-        return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-        function verb(n) { return function (v) { return step([n, v]); }; }
-        function step(op) {
-            if (f) throw new TypeError("Generator is already executing.");
-            while (g && (g = 0, op[0] && (_ = 0)), _) try {
-                if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-                if (y = 0, t) op = [op[0] & 2, t.value];
-                switch (op[0]) {
-                    case 0: case 1: t = op; break;
-                    case 4: _.label++; return { value: op[1], done: false };
-                    case 5: _.label++; y = op[1]; op = [0]; continue;
-                    case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                    default:
-                        if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                        if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                        if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                        if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                        if (t[2]) _.ops.pop();
-                        _.trys.pop(); continue;
-                }
-                op = body.call(thisArg, _);
-            } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-            if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-        }
-    };
-
-    __exportStar = function(m, o) {
-        for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(o, p)) __createBinding(o, m, p);
-    };
-
-    __createBinding = Object.create ? (function(o, m, k, k2) {
-        if (k2 === undefined) k2 = k;
-        var desc = Object.getOwnPropertyDescriptor(m, k);
-        if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-            desc = { enumerable: true, get: function() { return m[k]; } };
-        }
-        Object.defineProperty(o, k2, desc);
-    }) : (function(o, m, k, k2) {
-        if (k2 === undefined) k2 = k;
-        o[k2] = m[k];
-    });
-
-    __values = function (o) {
-        var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
-        if (m) return m.call(o);
-        if (o && typeof o.length === "number") return {
-            next: function () {
-                if (o && i >= o.length) o = void 0;
-                return { value: o && o[i++], done: !o };
-            }
-        };
-        throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
-    };
-
-    __read = function (o, n) {
-        var m = typeof Symbol === "function" && o[Symbol.iterator];
-        if (!m) return o;
-        var i = m.call(o), r, ar = [], e;
-        try {
-            while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
-        }
-        catch (error) { e = { error: error }; }
-        finally {
-            try {
-                if (r && !r.done && (m = i["return"])) m.call(i);
-            }
-            finally { if (e) throw e.error; }
-        }
-        return ar;
-    };
-
-    /** @deprecated */
-    __spread = function () {
-        for (var ar = [], i = 0; i < arguments.length; i++)
-            ar = ar.concat(__read(arguments[i]));
-        return ar;
-    };
-
-    /** @deprecated */
-    __spreadArrays = function () {
-        for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
-        for (var r = Array(s), k = 0, i = 0; i < il; i++)
-            for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
-                r[k] = a[j];
-        return r;
-    };
-
-    __spreadArray = function (to, from, pack) {
-        if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-            if (ar || !(i in from)) {
-                if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-                ar[i] = from[i];
-            }
-        }
-        return to.concat(ar || Array.prototype.slice.call(from));
-    };
-
-    __await = function (v) {
-        return this instanceof __await ? (this.v = v, this) : new __await(v);
-    };
-
-    __asyncGenerator = function (thisArg, _arguments, generator) {
-        if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
-        var g = generator.apply(thisArg, _arguments || []), i, q = [];
-        return i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i;
-        function verb(n) { if (g[n]) i[n] = function (v) { return new Promise(function (a, b) { q.push([n, v, a, b]) > 1 || resume(n, v); }); }; }
-        function resume(n, v) { try { step(g[n](v)); } catch (e) { settle(q[0][3], e); } }
-        function step(r) { r.value instanceof __await ? Promise.resolve(r.value.v).then(fulfill, reject) : settle(q[0][2], r);  }
-        function fulfill(value) { resume("next", value); }
-        function reject(value) { resume("throw", value); }
-        function settle(f, v) { if (f(v), q.shift(), q.length) resume(q[0][0], q[0][1]); }
-    };
-
-    __asyncDelegator = function (o) {
-        var i, p;
-        return i = {}, verb("next"), verb("throw", function (e) { throw e; }), verb("return"), i[Symbol.iterator] = function () { return this; }, i;
-        function verb(n, f) { i[n] = o[n] ? function (v) { return (p = !p) ? { value: __await(o[n](v)), done: false } : f ? f(v) : v; } : f; }
-    };
-
-    __asyncValues = function (o) {
-        if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
-        var m = o[Symbol.asyncIterator], i;
-        return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
-        function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
-        function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
-    };
-
-    __makeTemplateObject = function (cooked, raw) {
-        if (Object.defineProperty) { Object.defineProperty(cooked, "raw", { value: raw }); } else { cooked.raw = raw; }
-        return cooked;
-    };
-
-    var __setModuleDefault = Object.create ? (function(o, v) {
-        Object.defineProperty(o, "default", { enumerable: true, value: v });
-    }) : function(o, v) {
-        o["default"] = v;
-    };
-
-    __importStar = function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-
-    __importDefault = function (mod) {
-        return (mod && mod.__esModule) ? mod : { "default": mod };
-    };
-
-    __classPrivateFieldGet = function (receiver, state, kind, f) {
-        if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
-        if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
-        return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
-    };
-
-    __classPrivateFieldSet = function (receiver, state, value, kind, f) {
-        if (kind === "m") throw new TypeError("Private method is not writable");
-        if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
-        if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
-        return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
-    };
-
-    __classPrivateFieldIn = function (state, receiver) {
-        if (receiver === null || (typeof receiver !== "object" && typeof receiver !== "function")) throw new TypeError("Cannot use 'in' operator on non-object");
-        return typeof state === "function" ? receiver === state : state.has(receiver);
-    };
-
-    __addDisposableResource = function (env, value, async) {
-        if (value !== null && value !== void 0) {
-            if (typeof value !== "object" && typeof value !== "function") throw new TypeError("Object expected.");
-            var dispose;
-            if (async) {
-                if (!Symbol.asyncDispose) throw new TypeError("Symbol.asyncDispose is not defined.");
-                dispose = value[Symbol.asyncDispose];
-            }
-            if (dispose === void 0) {
-                if (!Symbol.dispose) throw new TypeError("Symbol.dispose is not defined.");
-                dispose = value[Symbol.dispose];
-            }
-            if (typeof dispose !== "function") throw new TypeError("Object not disposable.");
-            env.stack.push({ value: value, dispose: dispose, async: async });
-        }
-        else if (async) {
-            env.stack.push({ async: true });
-        }
-        return value;
-    };
-
-    var _SuppressedError = typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
-        var e = new Error(message);
-        return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
-    };
-
-    __disposeResources = function (env) {
-        function fail(e) {
-            env.error = env.hasError ? new _SuppressedError(e, env.error, "An error was suppressed during disposal.") : e;
-            env.hasError = true;
-        }
-        function next() {
-            while (env.stack.length) {
-                var rec = env.stack.pop();
-                try {
-                    var result = rec.dispose && rec.dispose.call(rec.value);
-                    if (rec.async) return Promise.resolve(result).then(next, function(e) { fail(e); return next(); });
-                }
-                catch (e) {
-                    fail(e);
-                }
-            }
-            if (env.hasError) throw env.error;
-        }
-        return next();
-    };
-
-    exporter("__extends", __extends);
-    exporter("__assign", __assign);
-    exporter("__rest", __rest);
-    exporter("__decorate", __decorate);
-    exporter("__param", __param);
-    exporter("__esDecorate", __esDecorate);
-    exporter("__runInitializers", __runInitializers);
-    exporter("__propKey", __propKey);
-    exporter("__setFunctionName", __setFunctionName);
-    exporter("__metadata", __metadata);
-    exporter("__awaiter", __awaiter);
-    exporter("__generator", __generator);
-    exporter("__exportStar", __exportStar);
-    exporter("__createBinding", __createBinding);
-    exporter("__values", __values);
-    exporter("__read", __read);
-    exporter("__spread", __spread);
-    exporter("__spreadArrays", __spreadArrays);
-    exporter("__spreadArray", __spreadArray);
-    exporter("__await", __await);
-    exporter("__asyncGenerator", __asyncGenerator);
-    exporter("__asyncDelegator", __asyncDelegator);
-    exporter("__asyncValues", __asyncValues);
-    exporter("__makeTemplateObject", __makeTemplateObject);
-    exporter("__importStar", __importStar);
-    exporter("__importDefault", __importDefault);
-    exporter("__classPrivateFieldGet", __classPrivateFieldGet);
-    exporter("__classPrivateFieldSet", __classPrivateFieldSet);
-    exporter("__classPrivateFieldIn", __classPrivateFieldIn);
-    exporter("__addDisposableResource", __addDisposableResource);
-    exporter("__disposeResources", __disposeResources);
-});
-
-
-/***/ }),
-
 /***/ 4294:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
@@ -9075,6 +8412,131 @@ module.exports = buildConnector
 
 /***/ }),
 
+/***/ 4462:
+/***/ ((module) => {
+
+
+
+/** @type {Record<string, string | undefined>} */
+const headerNameLowerCasedRecord = {}
+
+// https://developer.mozilla.org/docs/Web/HTTP/Headers
+const wellknownHeaderNames = [
+  'Accept',
+  'Accept-Encoding',
+  'Accept-Language',
+  'Accept-Ranges',
+  'Access-Control-Allow-Credentials',
+  'Access-Control-Allow-Headers',
+  'Access-Control-Allow-Methods',
+  'Access-Control-Allow-Origin',
+  'Access-Control-Expose-Headers',
+  'Access-Control-Max-Age',
+  'Access-Control-Request-Headers',
+  'Access-Control-Request-Method',
+  'Age',
+  'Allow',
+  'Alt-Svc',
+  'Alt-Used',
+  'Authorization',
+  'Cache-Control',
+  'Clear-Site-Data',
+  'Connection',
+  'Content-Disposition',
+  'Content-Encoding',
+  'Content-Language',
+  'Content-Length',
+  'Content-Location',
+  'Content-Range',
+  'Content-Security-Policy',
+  'Content-Security-Policy-Report-Only',
+  'Content-Type',
+  'Cookie',
+  'Cross-Origin-Embedder-Policy',
+  'Cross-Origin-Opener-Policy',
+  'Cross-Origin-Resource-Policy',
+  'Date',
+  'Device-Memory',
+  'Downlink',
+  'ECT',
+  'ETag',
+  'Expect',
+  'Expect-CT',
+  'Expires',
+  'Forwarded',
+  'From',
+  'Host',
+  'If-Match',
+  'If-Modified-Since',
+  'If-None-Match',
+  'If-Range',
+  'If-Unmodified-Since',
+  'Keep-Alive',
+  'Last-Modified',
+  'Link',
+  'Location',
+  'Max-Forwards',
+  'Origin',
+  'Permissions-Policy',
+  'Pragma',
+  'Proxy-Authenticate',
+  'Proxy-Authorization',
+  'RTT',
+  'Range',
+  'Referer',
+  'Referrer-Policy',
+  'Refresh',
+  'Retry-After',
+  'Sec-WebSocket-Accept',
+  'Sec-WebSocket-Extensions',
+  'Sec-WebSocket-Key',
+  'Sec-WebSocket-Protocol',
+  'Sec-WebSocket-Version',
+  'Server',
+  'Server-Timing',
+  'Service-Worker-Allowed',
+  'Service-Worker-Navigation-Preload',
+  'Set-Cookie',
+  'SourceMap',
+  'Strict-Transport-Security',
+  'Supports-Loading-Mode',
+  'TE',
+  'Timing-Allow-Origin',
+  'Trailer',
+  'Transfer-Encoding',
+  'Upgrade',
+  'Upgrade-Insecure-Requests',
+  'User-Agent',
+  'Vary',
+  'Via',
+  'WWW-Authenticate',
+  'X-Content-Type-Options',
+  'X-DNS-Prefetch-Control',
+  'X-Frame-Options',
+  'X-Permitted-Cross-Domain-Policies',
+  'X-Powered-By',
+  'X-Requested-With',
+  'X-XSS-Protection'
+]
+
+for (let i = 0; i < wellknownHeaderNames.length; ++i) {
+  const key = wellknownHeaderNames[i]
+  const lowerCasedKey = key.toLowerCase()
+  headerNameLowerCasedRecord[key] = headerNameLowerCasedRecord[lowerCasedKey] =
+    lowerCasedKey
+}
+
+// Note: object prototypes should not be able to be referenced. e.g. `Object#hasOwnProperty`.
+Object.setPrototypeOf(headerNameLowerCasedRecord, null)
+
+module.exports = {
+  wellknownHeaderNames,
+  headerNameLowerCasedRecord
+}
+
+
+/***/ }),
+
 /***/ 8045:
 /***/ ((module) => {
 
@@ -9902,6 +9364,7 @@ const { InvalidArgumentError } = __nccwpck_require__(8045)
 const { Blob } = __nccwpck_require__(4300)
 const nodeUtil = __nccwpck_require__(3837)
 const { stringify } = __nccwpck_require__(3477)
+const { headerNameLowerCasedRecord } = __nccwpck_require__(4462)
 
 const [nodeMajor, nodeMinor] = process.versions.node.split('.').map(v => Number(v))
 
@@ -10109,6 +9572,15 @@ const KEEPALIVE_TIMEOUT_EXPR = /timeout=(\d+)/
 function parseKeepAliveTimeout (val) {
   const m = val.toString().match(KEEPALIVE_TIMEOUT_EXPR)
   return m ? parseInt(m[1], 10) * 1000 : null
+}
+
+/**
+ * Retrieves a header name and returns its lowercase value.
+ * @param {string | Buffer} value Header name
+ * @returns {string}
+ */
+function headerNameToString (value) {
+  return headerNameLowerCasedRecord[value] || value.toLowerCase()
 }
 
 function parseHeaders (headers, obj = {}) {
@@ -10382,6 +9854,7 @@ module.exports = {
   isIterable,
   isAsyncIterable,
   isDestroyed,
+  headerNameToString,
   parseRawHeaders,
   parseHeaders,
   parseKeepAliveTimeout,
@@ -17016,14 +16489,18 @@ const { isBlobLike, toUSVString, ReadableStreamFrom } = __nccwpck_require__(3983
 const assert = __nccwpck_require__(9491)
 const { isUint8Array } = __nccwpck_require__(9830)
 
+let supportedHashes = []
+
 // https://nodejs.org/api/crypto.html#determining-if-crypto-support-is-unavailable
 /** @type {import('crypto')|undefined} */
 let crypto
 
 try {
   crypto = __nccwpck_require__(6113)
+  const possibleRelevantHashes = ['sha256', 'sha384', 'sha512']
+  supportedHashes = crypto.getHashes().filter((hash) => possibleRelevantHashes.includes(hash))
+/* c8 ignore next 3 */
 } catch {
-
 }
 
 function responseURL (response) {
@@ -17551,66 +17028,56 @@ function bytesMatch (bytes, metadataList) {
     return true
   }
 
-  // 3. If parsedMetadata is the empty set, return true.
+  // 3. If response is not eligible for integrity validation, return false.
+  // TODO
+
+  // 4. If parsedMetadata is the empty set, return true.
   if (parsedMetadata.length === 0) {
     return true
   }
 
-  // 4. Let metadata be the result of getting the strongest
+  // 5. Let metadata be the result of getting the strongest
   //    metadata from parsedMetadata.
-  const list = parsedMetadata.sort((c, d) => d.algo.localeCompare(c.algo))
-  // get the strongest algorithm
-  const strongest = list[0].algo
-  // get all entries that use the strongest algorithm; ignore weaker
-  const metadata = list.filter((item) => item.algo === strongest)
+  const strongest = getStrongestMetadata(parsedMetadata)
+  const metadata = filterMetadataListByAlgorithm(parsedMetadata, strongest)
 
-  // 5. For each item in metadata:
+  // 6. For each item in metadata:
   for (const item of metadata) {
     // 1. Let algorithm be the alg component of item.
     const algorithm = item.algo
 
     // 2. Let expectedValue be the val component of item.
-    let expectedValue = item.hash
+    const expectedValue = item.hash
 
     // See https://github.com/web-platform-tests/wpt/commit/e4c5cc7a5e48093220528dfdd1c4012dc3837a0e
     // "be liberal with padding". This is annoying, and it's not even in the spec.
 
-    if (expectedValue.endsWith('==')) {
-      expectedValue = expectedValue.slice(0, -2)
-    }
-
     // 3. Let actualValue be the result of applying algorithm to bytes.
     let actualValue = crypto.createHash(algorithm).update(bytes).digest('base64')
 
-    if (actualValue.endsWith('==')) {
-      actualValue = actualValue.slice(0, -2)
+    if (actualValue[actualValue.length - 1] === '=') {
+      if (actualValue[actualValue.length - 2] === '=') {
+        actualValue = actualValue.slice(0, -2)
+      } else {
+        actualValue = actualValue.slice(0, -1)
+      }
     }
 
     // 4. If actualValue is a case-sensitive match for expectedValue,
     //    return true.
-    if (actualValue === expectedValue) {
-      return true
-    }
-
-    let actualBase64URL = crypto.createHash(algorithm).update(bytes).digest('base64url')
-
-    if (actualBase64URL.endsWith('==')) {
-      actualBase64URL = actualBase64URL.slice(0, -2)
-    }
-
-    if (actualBase64URL === expectedValue) {
+    if (compareBase64Mixed(actualValue, expectedValue)) {
       return true
     }
   }
 
-  // 6. Return false.
+  // 7. Return false.
   return false
 }
 
 // https://w3c.github.io/webappsec-subresource-integrity/#grammardef-hash-with-options
 // https://www.w3.org/TR/CSP2/#source-list-syntax
 // https://www.rfc-editor.org/rfc/rfc5234#appendix-B.1
-const parseHashWithOptions = /((?<algo>sha256|sha384|sha512)-(?<hash>[A-z0-9+/]{1}.*={0,2}))( +[\x21-\x7e]?)?/i
+const parseHashWithOptions = /(?<algo>sha256|sha384|sha512)-((?<hash>[A-Za-z0-9+/]+|[A-Za-z0-9_-]+)={0,2}(?:\s|$)( +[!-~]*)?)?/i
 
 /**
  * @see https://w3c.github.io/webappsec-subresource-integrity/#parse-metadata
@@ -17624,8 +17091,6 @@ function parseMetadata (metadata) {
   // 2. Let empty be equal to true.
   let empty = true
 
-  const supportedHashes = crypto.getHashes()
-
   // 3. For each token returned by splitting metadata on spaces:
   for (const token of metadata.split(' ')) {
     // 1. Set empty to false.
@@ -17635,7 +17100,11 @@ function parseMetadata (metadata) {
     const parsedToken = parseHashWithOptions.exec(token)
 
     // 3. If token does not parse, continue to the next token.
-    if (parsedToken === null || parsedToken.groups === undefined) {
+    if (
+      parsedToken === null ||
+      parsedToken.groups === undefined ||
+      parsedToken.groups.algo === undefined
+    ) {
       // Note: Chromium blocks the request at this point, but Firefox
       // gives a warning that an invalid integrity was given. The
       // correct behavior is to ignore these, and subsequently not
@@ -17644,11 +17113,11 @@ function parseMetadata (metadata) {
     }
 
     // 4. Let algorithm be the hash-algo component of token.
-    const algorithm = parsedToken.groups.algo
+    const algorithm = parsedToken.groups.algo.toLowerCase()
 
     // 5. If algorithm is a hash function recognized by the user
     //    agent, add the parsed token to result.
-    if (supportedHashes.includes(algorithm.toLowerCase())) {
+    if (supportedHashes.includes(algorithm)) {
       result.push(parsedToken.groups)
     }
   }
@@ -17659,6 +17128,82 @@ function parseMetadata (metadata) {
   }
 
   return result
+}
+
+/**
+ * @param {{ algo: 'sha256' | 'sha384' | 'sha512' }[]} metadataList
+ */
+function getStrongestMetadata (metadataList) {
+  // Let algorithm be the algo component of the first item in metadataList.
+  // Can be sha256
+  let algorithm = metadataList[0].algo
+  // If the algorithm is sha512, then it is the strongest
+  // and we can return immediately
+  if (algorithm[3] === '5') {
+    return algorithm
+  }
+
+  for (let i = 1; i < metadataList.length; ++i) {
+    const metadata = metadataList[i]
+    // If the algorithm is sha512, then it is the strongest
+    // and we can break the loop immediately
+    if (metadata.algo[3] === '5') {
+      algorithm = 'sha512'
+      break
+    // If the algorithm is sha384, then a potential sha256 or sha384 is ignored
+    } else if (algorithm[3] === '3') {
+      continue
+    // algorithm is sha256, check if algorithm is sha384 and if so, set it as
+    // the strongest
+    } else if (metadata.algo[3] === '3') {
+      algorithm = 'sha384'
+    }
+  }
+  return algorithm
+}
+
+function filterMetadataListByAlgorithm (metadataList, algorithm) {
+  if (metadataList.length === 1) {
+    return metadataList
+  }
+
+  let pos = 0
+  for (let i = 0; i < metadataList.length; ++i) {
+    if (metadataList[i].algo === algorithm) {
+      metadataList[pos++] = metadataList[i]
+    }
+  }
+
+  metadataList.length = pos
+
+  return metadataList
+}
+
+/**
+ * Compares two base64 strings, allowing for base64url
+ * in the second string.
+ *
+* @param {string} actualValue always base64
+ * @param {string} expectedValue base64 or base64url
+ * @returns {boolean}
+ */
+function compareBase64Mixed (actualValue, expectedValue) {
+  if (actualValue.length !== expectedValue.length) {
+    return false
+  }
+  for (let i = 0; i < actualValue.length; ++i) {
+    if (actualValue[i] !== expectedValue[i]) {
+      if (
+        (actualValue[i] === '+' && expectedValue[i] === '-') ||
+        (actualValue[i] === '/' && expectedValue[i] === '_')
+      ) {
+        continue
+      }
+      return false
+    }
+  }
+
+  return true
 }
 
 // https://w3c.github.io/webappsec-upgrade-insecure-requests/#upgrade-request
@@ -18076,7 +17621,8 @@ module.exports = {
   urlHasHttpsScheme,
   urlIsHttpHttpsScheme,
   readAllBytes,
-  normalizeMethodRecord
+  normalizeMethodRecord,
+  parseMetadata
 }
 
 
@@ -20154,12 +19700,17 @@ function parseLocation (statusCode, headers) {
 
 // https://tools.ietf.org/html/rfc7231#section-6.4.4
 function shouldRemoveHeader (header, removeContent, unknownOrigin) {
-  return (
-    (header.length === 4 && header.toString().toLowerCase() === 'host') ||
-    (removeContent && header.toString().toLowerCase().indexOf('content-') === 0) ||
-    (unknownOrigin && header.length === 13 && header.toString().toLowerCase() === 'authorization') ||
-    (unknownOrigin && header.length === 6 && header.toString().toLowerCase() === 'cookie')
-  )
+  if (header.length === 4) {
+    return util.headerNameToString(header) === 'host'
+  }
+  if (removeContent && util.headerNameToString(header).startsWith('content-')) {
+    return true
+  }
+  if (unknownOrigin && (header.length === 13 || header.length === 6 || header.length === 19)) {
+    const name = util.headerNameToString(header)
+    return name === 'authorization' || name === 'cookie' || name === 'proxy-authorization'
+  }
+  return false
 }
 
 // https://tools.ietf.org/html/rfc7231#section-6.4
@@ -24636,23 +24187,6 @@ module.exports = {
 
 /***/ }),
 
-/***/ 6256:
-/***/ ((__unused_webpack_module, exports) => {
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.upperCaseFirst = void 0;
-/**
- * Upper case the first character of an input string.
- */
-function upperCaseFirst(input) {
-    return input.charAt(0).toUpperCase() + input.substr(1);
-}
-exports.upperCaseFirst = upperCaseFirst;
-//# sourceMappingURL=index.js.map
-
-/***/ }),
-
 /***/ 5840:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
@@ -27101,8 +26635,10 @@ __nccwpck_require__.a(__webpack_module__, async (__webpack_handle_async_dependen
 /* harmony export */   "K": () => (/* binding */ run)
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(2186);
-/* harmony import */ var tablemark__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(6051);
+/* harmony import */ var mdast_util_gfm_table__WEBPACK_IMPORTED_MODULE_2__ = __nccwpck_require__(5201);
+/* harmony import */ var mdast_util_to_markdown__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(2353);
 // @ts-check
+
 
 
 
@@ -27112,10 +26648,11 @@ __nccwpck_require__.a(__webpack_module__, async (__webpack_handle_async_dependen
 // If this file is being run directly
 if (import.meta.url.endsWith(process.argv[1])) {
   const json = JSON.parse(_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('json'))
+  const alignPipes = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('align-pipes') !== 'false'
 
   _actions_core__WEBPACK_IMPORTED_MODULE_0__.setOutput(
     'table',
-    await run(_actions_core__WEBPACK_IMPORTED_MODULE_0__, json).catch((error) => {
+    await run(_actions_core__WEBPACK_IMPORTED_MODULE_0__, json, alignPipes).catch((error) => {
       _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(error)
     })
   )
@@ -27123,10 +26660,47 @@ if (import.meta.url.endsWith(process.argv[1])) {
 
 /**
  * @param {import("@actions/core")} core
- * @param {import("tablemark").InputData<import("tablemark").LooseObject>} json
+ * @param {Object} json
+ * @param {boolean} [alignPipes]
  */
-async function run(core, json) {
-  const markdownTable = (0,tablemark__WEBPACK_IMPORTED_MODULE_1__/* ["default"] */ .ZP)(json)
+async function run(core, json, alignPipes) {
+  function createTableCell(value) {
+    return {
+      type: 'tableCell',
+      children: [{ type: 'text', value: String(value) }]
+    }
+  }
+
+  function createTableRow(cells) {
+    return {
+      type: 'tableRow',
+      children: cells.map(createTableCell)
+    }
+  }
+
+  function createTable(headers, rows) {
+    return {
+      type: 'table',
+      align: headers.map(() => 'left'), // Align all columns left
+      children: [createTableRow(headers), ...rows.map(createTableRow)]
+    }
+  }
+
+  // Convert JSON to mdast (Markdown Abstract Syntax Tree)
+  const headers = Object.keys(json[0])
+  const rows = json.map(Object.values)
+  const mdast = {
+    type: 'root',
+    children: [createTable(headers, rows)]
+  }
+
+  const markdownTable = (0,mdast_util_to_markdown__WEBPACK_IMPORTED_MODULE_1__/* .toMarkdown */ .x)(mdast, {
+    extensions: [
+      (0,mdast_util_gfm_table__WEBPACK_IMPORTED_MODULE_2__/* .gfmTableToMarkdown */ .x)({
+        tablePipeAlign: alignPipes
+      })
+    ]
+  })
 
   // Add the Markdown table to the summary
   core.summary
@@ -27142,179 +26716,6902 @@ __webpack_async_result__();
 
 /***/ }),
 
-/***/ 6051:
+/***/ 5201:
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __nccwpck_require__) => {
 
 
 // EXPORTS
 __nccwpck_require__.d(__webpack_exports__, {
-  "BG": () => (/* binding */ alignmentOptions),
-  "ZP": () => (/* binding */ tablemark_dist)
+  "x": () => (/* binding */ gfmTableToMarkdown)
 });
 
-// UNUSED EXPORTS: toCellText
+// UNUSED EXPORTS: gfmTableFromMarkdown
 
-// EXTERNAL MODULE: ./node_modules/sentence-case/dist/index.js
-var dist = __nccwpck_require__(9229);
-// EXTERNAL MODULE: ./node_modules/split-text-to-chunks/index.js
-var split_text_to_chunks = __nccwpck_require__(3624);
-;// CONCATENATED MODULE: ./node_modules/tablemark/dist/utilities.js
+;// CONCATENATED MODULE: ./node_modules/markdown-table/index.js
+/**
+ * @typedef Options
+ *   Configuration (optional).
+ * @property {string|null|ReadonlyArray<string|null|undefined>} [align]
+ *   One style for all columns, or styles for their respective columns.
+ *   Each style is either `'l'` (left), `'r'` (right), or `'c'` (center).
+ *   Other values are treated as `''`, which doesn’t place the colon in the
+ *   alignment row but does align left.
+ *   *Only the lowercased first character is used, so `Right` is fine.*
+ * @property {boolean} [padding=true]
+ *   Whether to add a space of padding between delimiters and cells.
+ *
+ *   When `true`, there is padding:
+ *
+ *   ```markdown
+ *   | Alpha | B     |
+ *   | ----- | ----- |
+ *   | C     | Delta |
+ *   ```
+ *
+ *   When `false`, there is no padding:
+ *
+ *   ```markdown
+ *   |Alpha|B    |
+ *   |-----|-----|
+ *   |C    |Delta|
+ *   ```
+ * @property {boolean} [delimiterStart=true]
+ *   Whether to begin each row with the delimiter.
+ *
+ *   > 👉 **Note**: please don’t use this: it could create fragile structures
+ *   > that aren’t understandable to some markdown parsers.
+ *
+ *   When `true`, there are starting delimiters:
+ *
+ *   ```markdown
+ *   | Alpha | B     |
+ *   | ----- | ----- |
+ *   | C     | Delta |
+ *   ```
+ *
+ *   When `false`, there are no starting delimiters:
+ *
+ *   ```markdown
+ *   Alpha | B     |
+ *   ----- | ----- |
+ *   C     | Delta |
+ *   ```
+ * @property {boolean} [delimiterEnd=true]
+ *   Whether to end each row with the delimiter.
+ *
+ *   > 👉 **Note**: please don’t use this: it could create fragile structures
+ *   > that aren’t understandable to some markdown parsers.
+ *
+ *   When `true`, there are ending delimiters:
+ *
+ *   ```markdown
+ *   | Alpha | B     |
+ *   | ----- | ----- |
+ *   | C     | Delta |
+ *   ```
+ *
+ *   When `false`, there are no ending delimiters:
+ *
+ *   ```markdown
+ *   | Alpha | B
+ *   | ----- | -----
+ *   | C     | Delta
+ *   ```
+ * @property {boolean} [alignDelimiters=true]
+ *   Whether to align the delimiters.
+ *   By default, they are aligned:
+ *
+ *   ```markdown
+ *   | Alpha | B     |
+ *   | ----- | ----- |
+ *   | C     | Delta |
+ *   ```
+ *
+ *   Pass `false` to make them staggered:
+ *
+ *   ```markdown
+ *   | Alpha | B |
+ *   | - | - |
+ *   | C | Delta |
+ *   ```
+ * @property {(value: string) => number} [stringLength]
+ *   Function to detect the length of table cell content.
+ *   This is used when aligning the delimiters (`|`) between table cells.
+ *   Full-width characters and emoji mess up delimiter alignment when viewing
+ *   the markdown source.
+ *   To fix this, you can pass this function, which receives the cell content
+ *   and returns its “visible” size.
+ *   Note that what is and isn’t visible depends on where the text is displayed.
+ *
+ *   Without such a function, the following:
+ *
+ *   ```js
+ *   markdownTable([
+ *     ['Alpha', 'Bravo'],
+ *     ['中文', 'Charlie'],
+ *     ['👩‍❤️‍👩', 'Delta']
+ *   ])
+ *   ```
+ *
+ *   Yields:
+ *
+ *   ```markdown
+ *   | Alpha | Bravo |
+ *   | - | - |
+ *   | 中文 | Charlie |
+ *   | 👩‍❤️‍👩 | Delta |
+ *   ```
+ *
+ *   With [`string-width`](https://github.com/sindresorhus/string-width):
+ *
+ *   ```js
+ *   import stringWidth from 'string-width'
+ *
+ *   markdownTable(
+ *     [
+ *       ['Alpha', 'Bravo'],
+ *       ['中文', 'Charlie'],
+ *       ['👩‍❤️‍👩', 'Delta']
+ *     ],
+ *     {stringLength: stringWidth}
+ *   )
+ *   ```
+ *
+ *   Yields:
+ *
+ *   ```markdown
+ *   | Alpha | Bravo   |
+ *   | ----- | ------- |
+ *   | 中文  | Charlie |
+ *   | 👩‍❤️‍👩    | Delta   |
+ *   ```
+ */
 
+/**
+ * @typedef {Options} MarkdownTableOptions
+ * @todo
+ *   Remove next major.
+ */
 
+/**
+ * Generate a markdown ([GFM](https://docs.github.com/en/github/writing-on-github/working-with-advanced-formatting/organizing-information-with-tables)) table..
+ *
+ * @param {ReadonlyArray<ReadonlyArray<string|null|undefined>>} table
+ *   Table data (matrix of strings).
+ * @param {Options} [options]
+ *   Configuration (optional).
+ * @returns {string}
+ */
+function markdownTable(table, options = {}) {
+  const align = (options.align || []).concat()
+  const stringLength = options.stringLength || defaultStringLength
+  /** @type {Array<number>} Character codes as symbols for alignment per column. */
+  const alignments = []
+  /** @type {Array<Array<string>>} Cells per row. */
+  const cellMatrix = []
+  /** @type {Array<Array<number>>} Sizes of each cell per row. */
+  const sizeMatrix = []
+  /** @type {Array<number>} */
+  const longestCellByColumn = []
+  let mostCellsPerRow = 0
+  let rowIndex = -1
 
-const columnsWidthMin = 5;
-const pipeRegex = /\|/g;
-const alignmentSet = new Set([
-    "LEFT",
-    "CENTER",
-    "RIGHT"
-]);
-const pad = (alignment, width, content) => {
-    if (alignment == null || alignment === alignmentOptions.left) {
-        return content.padEnd(width);
+  // This is a superfluous loop if we don’t align delimiters, but otherwise we’d
+  // do superfluous work when aligning, so optimize for aligning.
+  while (++rowIndex < table.length) {
+    /** @type {Array<string>} */
+    const row = []
+    /** @type {Array<number>} */
+    const sizes = []
+    let columnIndex = -1
+
+    if (table[rowIndex].length > mostCellsPerRow) {
+      mostCellsPerRow = table[rowIndex].length
     }
-    if (alignment === alignmentOptions.right) {
-        return content.padStart(width);
-    }
-    // center alignment
-    const remainder = Math.max(0, (width - content.length) % 2);
-    const sides = Math.max(0, (width - content.length - remainder) / 2);
-    return " ".repeat(sides) + content + " ".repeat(sides + remainder);
-};
-const toCellText = v => {
-    if (typeof v === "undefined")
-        return "";
-    return String(v).replace(pipeRegex, "\\|");
-};
-const line = (columns, config, forceGutters = false) => {
-    const gutters = forceGutters ? true : config.wrapWithGutters;
-    return ((gutters ? "| " : "  ") +
-        columns.join(gutters ? " | " : "   ") +
-        (gutters ? " |" : "  ") +
-        config.lineEnding);
-};
-const row = (alignments, widths, columns, config) => {
-    const width = columns.length;
-    const values = new Array(width);
-    const first = new Array(width);
-    let height = 1;
-    for (let h = 0; h < width; h++) {
-        const cells = (values[h] = split_text_to_chunks(columns[h], widths[h]));
-        if (cells.length > height)
-            height = cells.length;
-        first[h] = pad(alignments[h], widths[h], cells[0]);
-    }
-    if (height === 1) {
-        return line(first, config, true);
-    }
-    const lines = new Array(height);
-    lines[0] = line(first, config, true);
-    for (let v = 1; v < height; v++) {
-        lines[v] = new Array(width);
-    }
-    for (let h = 0; h < width; h++) {
-        const cells = values[h];
-        let v = 1;
-        for (; v < cells.length; v++) {
-            lines[v][h] = pad(alignments[h], widths[h], cells[v]);
+
+    while (++columnIndex < table[rowIndex].length) {
+      const cell = serialize(table[rowIndex][columnIndex])
+
+      if (options.alignDelimiters !== false) {
+        const size = stringLength(cell)
+        sizes[columnIndex] = size
+
+        if (
+          longestCellByColumn[columnIndex] === undefined ||
+          size > longestCellByColumn[columnIndex]
+        ) {
+          longestCellByColumn[columnIndex] = size
         }
-        for (; v < height; v++) {
-            lines[v][h] = " ".repeat(widths[h]);
-        }
-    }
-    for (let h = 1; h < height; h++) {
-        lines[h] = line(lines[h], config);
-    }
-    return lines.join("");
-};
-const normalizeOptions = (options) => {
-    const defaults = {
-        toCellText,
-        caseHeaders: true,
-        columns: [],
-        lineEnding: "\n",
-        wrapWidth: Infinity,
-        wrapWithGutters: false
-    };
-    Object.assign(defaults, options);
-    defaults.columns =
-        options?.columns?.map(descriptor => {
-            if (typeof descriptor === "string") {
-                return { name: descriptor };
-            }
-            const align = descriptor.align?.toUpperCase() ??
-                alignmentOptions.left;
-            if (!alignmentSet.has(align)) {
-                throw new RangeError(`Unknown alignment, got ${descriptor.align}`);
-            }
-            return {
-                align,
-                name: descriptor.name
-            };
-        }) ?? [];
-    return defaults;
-};
-const getColumnTitles = (keys, config) => {
-    return keys.map((key, i) => {
-        if (Array.isArray(config.columns)) {
-            const customTitle = config.columns[i]?.name;
-            if (customTitle != null) {
-                return customTitle;
-            }
-        }
-        if (!config.caseHeaders) {
-            return key;
-        }
-        return (0,dist/* sentenceCase */.G8)(key);
-    });
-};
-const getColumnWidths = (input, keys, titles, config) => {
-    return input.reduce((sizes, item) => keys.map((key, i) => Math.max(split_text_to_chunks.width(config.toCellText(item[key]), config.wrapWidth), sizes[i])), titles.map(t => Math.max(columnsWidthMin, split_text_to_chunks.width(t, config.wrapWidth))));
-};
-const getColumnAlignments = (keys, config) => {
-    return keys.map((_, i) => {
-        if (typeof config.columns[i]?.align === "string") {
-            return config.columns[i].align;
-        }
-        return alignmentOptions.left;
-    });
-};
+      }
 
-;// CONCATENATED MODULE: ./node_modules/tablemark/dist/index.js
-
-const alignmentOptions = {
-    left: "LEFT",
-    center: "CENTER",
-    right: "RIGHT"
-};
-/* harmony default export */ const tablemark_dist = ((input, options = {}) => {
-    if (typeof input[Symbol.iterator] !== "function") {
-        throw new TypeError(`Expected an iterable, got ${typeof input}`);
+      row.push(cell)
     }
-    const config = normalizeOptions(options);
-    const keys = Object.keys(input[0]);
-    const titles = getColumnTitles(keys, config);
-    const widths = getColumnWidths(input, keys, titles, config);
-    const alignments = getColumnAlignments(keys, config);
-    let table = "";
-    // header line
-    table += row(alignments, widths, titles, config);
-    // header separator
-    table += line(alignments.map((align, i) => (align === alignmentOptions.left || align === alignmentOptions.center
-        ? ":"
-        : "-") +
-        "-".repeat(widths[i] - 2) +
-        (align === alignmentOptions.right || align === alignmentOptions.center
-            ? ":"
-            : "-")), config, true);
-    // table body
-    table += input
-        .map((item, _) => row(alignments, widths, keys.map(key => config.toCellText(item[key])), config))
-        .join("");
-    return table;
+
+    cellMatrix[rowIndex] = row
+    sizeMatrix[rowIndex] = sizes
+  }
+
+  // Figure out which alignments to use.
+  let columnIndex = -1
+
+  if (typeof align === 'object' && 'length' in align) {
+    while (++columnIndex < mostCellsPerRow) {
+      alignments[columnIndex] = toAlignment(align[columnIndex])
+    }
+  } else {
+    const code = toAlignment(align)
+
+    while (++columnIndex < mostCellsPerRow) {
+      alignments[columnIndex] = code
+    }
+  }
+
+  // Inject the alignment row.
+  columnIndex = -1
+  /** @type {Array<string>} */
+  const row = []
+  /** @type {Array<number>} */
+  const sizes = []
+
+  while (++columnIndex < mostCellsPerRow) {
+    const code = alignments[columnIndex]
+    let before = ''
+    let after = ''
+
+    if (code === 99 /* `c` */) {
+      before = ':'
+      after = ':'
+    } else if (code === 108 /* `l` */) {
+      before = ':'
+    } else if (code === 114 /* `r` */) {
+      after = ':'
+    }
+
+    // There *must* be at least one hyphen-minus in each alignment cell.
+    let size =
+      options.alignDelimiters === false
+        ? 1
+        : Math.max(
+            1,
+            longestCellByColumn[columnIndex] - before.length - after.length
+          )
+
+    const cell = before + '-'.repeat(size) + after
+
+    if (options.alignDelimiters !== false) {
+      size = before.length + size + after.length
+
+      if (size > longestCellByColumn[columnIndex]) {
+        longestCellByColumn[columnIndex] = size
+      }
+
+      sizes[columnIndex] = size
+    }
+
+    row[columnIndex] = cell
+  }
+
+  // Inject the alignment row.
+  cellMatrix.splice(1, 0, row)
+  sizeMatrix.splice(1, 0, sizes)
+
+  rowIndex = -1
+  /** @type {Array<string>} */
+  const lines = []
+
+  while (++rowIndex < cellMatrix.length) {
+    const row = cellMatrix[rowIndex]
+    const sizes = sizeMatrix[rowIndex]
+    columnIndex = -1
+    /** @type {Array<string>} */
+    const line = []
+
+    while (++columnIndex < mostCellsPerRow) {
+      const cell = row[columnIndex] || ''
+      let before = ''
+      let after = ''
+
+      if (options.alignDelimiters !== false) {
+        const size =
+          longestCellByColumn[columnIndex] - (sizes[columnIndex] || 0)
+        const code = alignments[columnIndex]
+
+        if (code === 114 /* `r` */) {
+          before = ' '.repeat(size)
+        } else if (code === 99 /* `c` */) {
+          if (size % 2) {
+            before = ' '.repeat(size / 2 + 0.5)
+            after = ' '.repeat(size / 2 - 0.5)
+          } else {
+            before = ' '.repeat(size / 2)
+            after = before
+          }
+        } else {
+          after = ' '.repeat(size)
+        }
+      }
+
+      if (options.delimiterStart !== false && !columnIndex) {
+        line.push('|')
+      }
+
+      if (
+        options.padding !== false &&
+        // Don’t add the opening space if we’re not aligning and the cell is
+        // empty: there will be a closing space.
+        !(options.alignDelimiters === false && cell === '') &&
+        (options.delimiterStart !== false || columnIndex)
+      ) {
+        line.push(' ')
+      }
+
+      if (options.alignDelimiters !== false) {
+        line.push(before)
+      }
+
+      line.push(cell)
+
+      if (options.alignDelimiters !== false) {
+        line.push(after)
+      }
+
+      if (options.padding !== false) {
+        line.push(' ')
+      }
+
+      if (
+        options.delimiterEnd !== false ||
+        columnIndex !== mostCellsPerRow - 1
+      ) {
+        line.push('|')
+      }
+    }
+
+    lines.push(
+      options.delimiterEnd === false
+        ? line.join('').replace(/ +$/, '')
+        : line.join('')
+    )
+  }
+
+  return lines.join('\n')
+}
+
+/**
+ * @param {string|null|undefined} [value]
+ * @returns {string}
+ */
+function serialize(value) {
+  return value === null || value === undefined ? '' : String(value)
+}
+
+/**
+ * @param {string} value
+ * @returns {number}
+ */
+function defaultStringLength(value) {
+  return value.length
+}
+
+/**
+ * @param {string|null|undefined} value
+ * @returns {number}
+ */
+function toAlignment(value) {
+  const code = typeof value === 'string' ? value.codePointAt(0) : 0
+
+  return code === 67 /* `C` */ || code === 99 /* `c` */
+    ? 99 /* `c` */
+    : code === 76 /* `L` */ || code === 108 /* `l` */
+    ? 108 /* `l` */
+    : code === 82 /* `R` */ || code === 114 /* `r` */
+    ? 114 /* `r` */
+    : 0
+}
+
+// EXTERNAL MODULE: ./node_modules/mdast-util-to-markdown/lib/handle/index.js + 32 modules
+var handle = __nccwpck_require__(8969);
+;// CONCATENATED MODULE: ./node_modules/mdast-util-gfm-table/lib/index.js
+/**
+ * @typedef {import('mdast').InlineCode} InlineCode
+ * @typedef {import('mdast').Table} Table
+ * @typedef {import('mdast').TableCell} TableCell
+ * @typedef {import('mdast').TableRow} TableRow
+ *
+ * @typedef {import('markdown-table').Options} MarkdownTableOptions
+ *
+ * @typedef {import('mdast-util-from-markdown').CompileContext} CompileContext
+ * @typedef {import('mdast-util-from-markdown').Extension} FromMarkdownExtension
+ * @typedef {import('mdast-util-from-markdown').Handle} FromMarkdownHandle
+ *
+ * @typedef {import('mdast-util-to-markdown').Options} ToMarkdownExtension
+ * @typedef {import('mdast-util-to-markdown').Handle} ToMarkdownHandle
+ * @typedef {import('mdast-util-to-markdown').State} State
+ * @typedef {import('mdast-util-to-markdown').Info} Info
+ */
+
+/**
+ * @typedef Options
+ *   Configuration.
+ * @property {boolean | null | undefined} [tableCellPadding=true]
+ *   Whether to add a space of padding between delimiters and cells (default:
+ *   `true`).
+ * @property {boolean | null | undefined} [tablePipeAlign=true]
+ *   Whether to align the delimiters (default: `true`).
+ * @property {MarkdownTableOptions['stringLength'] | null | undefined} [stringLength]
+ *   Function to detect the length of table cell content, used when aligning
+ *   the delimiters between cells (optional).
+ */
+
+
+
+
+
+/**
+ * Create an extension for `mdast-util-from-markdown` to enable GFM tables in
+ * markdown.
+ *
+ * @returns {FromMarkdownExtension}
+ *   Extension for `mdast-util-from-markdown` to enable GFM tables.
+ */
+function gfmTableFromMarkdown() {
+  return {
+    enter: {
+      table: enterTable,
+      tableData: enterCell,
+      tableHeader: enterCell,
+      tableRow: enterRow
+    },
+    exit: {
+      codeText: exitCodeText,
+      table: exitTable,
+      tableData: exit,
+      tableHeader: exit,
+      tableRow: exit
+    }
+  }
+}
+
+/**
+ * @this {CompileContext}
+ * @type {FromMarkdownHandle}
+ */
+function enterTable(token) {
+  const align = token._align
+  assert(align, 'expected `_align` on table')
+  this.enter(
+    {
+      type: 'table',
+      align: align.map(function (d) {
+        return d === 'none' ? null : d
+      }),
+      children: []
+    },
+    token
+  )
+  this.data.inTable = true
+}
+
+/**
+ * @this {CompileContext}
+ * @type {FromMarkdownHandle}
+ */
+function exitTable(token) {
+  this.exit(token)
+  this.data.inTable = undefined
+}
+
+/**
+ * @this {CompileContext}
+ * @type {FromMarkdownHandle}
+ */
+function enterRow(token) {
+  this.enter({type: 'tableRow', children: []}, token)
+}
+
+/**
+ * @this {CompileContext}
+ * @type {FromMarkdownHandle}
+ */
+function exit(token) {
+  this.exit(token)
+}
+
+/**
+ * @this {CompileContext}
+ * @type {FromMarkdownHandle}
+ */
+function enterCell(token) {
+  this.enter({type: 'tableCell', children: []}, token)
+}
+
+// Overwrite the default code text data handler to unescape escaped pipes when
+// they are in tables.
+/**
+ * @this {CompileContext}
+ * @type {FromMarkdownHandle}
+ */
+function exitCodeText(token) {
+  let value = this.resume()
+
+  if (this.data.inTable) {
+    value = value.replace(/\\([\\|])/g, replace)
+  }
+
+  const node = this.stack[this.stack.length - 1]
+  assert(node.type === 'inlineCode')
+  node.value = value
+  this.exit(token)
+}
+
+/**
+ * @param {string} $0
+ * @param {string} $1
+ * @returns {string}
+ */
+function replace($0, $1) {
+  // Pipes work, backslashes don’t (but can’t escape pipes).
+  return $1 === '|' ? $1 : $0
+}
+
+/**
+ * Create an extension for `mdast-util-to-markdown` to enable GFM tables in
+ * markdown.
+ *
+ * @param {Options | null | undefined} [options]
+ *   Configuration.
+ * @returns {ToMarkdownExtension}
+ *   Extension for `mdast-util-to-markdown` to enable GFM tables.
+ */
+function gfmTableToMarkdown(options) {
+  const settings = options || {}
+  const padding = settings.tableCellPadding
+  const alignDelimiters = settings.tablePipeAlign
+  const stringLength = settings.stringLength
+  const around = padding ? ' ' : '|'
+
+  return {
+    unsafe: [
+      {character: '\r', inConstruct: 'tableCell'},
+      {character: '\n', inConstruct: 'tableCell'},
+      // A pipe, when followed by a tab or space (padding), or a dash or colon
+      // (unpadded delimiter row), could result in a table.
+      {atBreak: true, character: '|', after: '[\t :-]'},
+      // A pipe in a cell must be encoded.
+      {character: '|', inConstruct: 'tableCell'},
+      // A colon must be followed by a dash, in which case it could start a
+      // delimiter row.
+      {atBreak: true, character: ':', after: '-'},
+      // A delimiter row can also start with a dash, when followed by more
+      // dashes, a colon, or a pipe.
+      // This is a stricter version than the built in check for lists, thematic
+      // breaks, and setex heading underlines though:
+      // <https://github.com/syntax-tree/mdast-util-to-markdown/blob/51a2038/lib/unsafe.js#L57>
+      {atBreak: true, character: '-', after: '[:|-]'}
+    ],
+    handlers: {
+      inlineCode: inlineCodeWithTable,
+      table: handleTable,
+      tableCell: handleTableCell,
+      tableRow: handleTableRow
+    }
+  }
+
+  /**
+   * @type {ToMarkdownHandle}
+   * @param {Table} node
+   */
+  function handleTable(node, _, state, info) {
+    return serializeData(handleTableAsData(node, state, info), node.align)
+  }
+
+  /**
+   * This function isn’t really used normally, because we handle rows at the
+   * table level.
+   * But, if someone passes in a table row, this ensures we make somewhat sense.
+   *
+   * @type {ToMarkdownHandle}
+   * @param {TableRow} node
+   */
+  function handleTableRow(node, _, state, info) {
+    const row = handleTableRowAsData(node, state, info)
+    const value = serializeData([row])
+    // `markdown-table` will always add an align row
+    return value.slice(0, value.indexOf('\n'))
+  }
+
+  /**
+   * @type {ToMarkdownHandle}
+   * @param {TableCell} node
+   */
+  function handleTableCell(node, _, state, info) {
+    const exit = state.enter('tableCell')
+    const subexit = state.enter('phrasing')
+    const value = state.containerPhrasing(node, {
+      ...info,
+      before: around,
+      after: around
+    })
+    subexit()
+    exit()
+    return value
+  }
+
+  /**
+   * @param {Array<Array<string>>} matrix
+   * @param {Array<string | null | undefined> | null | undefined} [align]
+   */
+  function serializeData(matrix, align) {
+    return markdownTable(matrix, {
+      align,
+      // @ts-expect-error: `markdown-table` types should support `null`.
+      alignDelimiters,
+      // @ts-expect-error: `markdown-table` types should support `null`.
+      padding,
+      // @ts-expect-error: `markdown-table` types should support `null`.
+      stringLength
+    })
+  }
+
+  /**
+   * @param {Table} node
+   * @param {State} state
+   * @param {Info} info
+   */
+  function handleTableAsData(node, state, info) {
+    const children = node.children
+    let index = -1
+    /** @type {Array<Array<string>>} */
+    const result = []
+    const subexit = state.enter('table')
+
+    while (++index < children.length) {
+      result[index] = handleTableRowAsData(children[index], state, info)
+    }
+
+    subexit()
+
+    return result
+  }
+
+  /**
+   * @param {TableRow} node
+   * @param {State} state
+   * @param {Info} info
+   */
+  function handleTableRowAsData(node, state, info) {
+    const children = node.children
+    let index = -1
+    /** @type {Array<string>} */
+    const result = []
+    const subexit = state.enter('tableRow')
+
+    while (++index < children.length) {
+      // Note: the positional info as used here is incorrect.
+      // Making it correct would be impossible due to aligning cells?
+      // And it would need copy/pasting `markdown-table` into this project.
+      result[index] = handleTableCell(children[index], node, state, info)
+    }
+
+    subexit()
+
+    return result
+  }
+
+  /**
+   * @type {ToMarkdownHandle}
+   * @param {InlineCode} node
+   */
+  function inlineCodeWithTable(node, parent, state) {
+    let value = handle/* handle.inlineCode */.p.inlineCode(node, parent, state)
+
+    if (state.stack.includes('tableCell')) {
+      value = value.replace(/\|/g, '\\$&')
+    }
+
+    return value
+  }
+}
+
+
+/***/ }),
+
+/***/ 8969:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __nccwpck_require__) => {
+
+
+// EXPORTS
+__nccwpck_require__.d(__webpack_exports__, {
+  "p": () => (/* binding */ handle)
 });
 
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/handle/blockquote.js
+/**
+ * @typedef {import('mdast').Blockquote} Blockquote
+ * @typedef {import('mdast').Parents} Parents
+ * @typedef {import('../types.js').Info} Info
+ * @typedef {import('../types.js').Map} Map
+ * @typedef {import('../types.js').State} State
+ */
 
+/**
+ * @param {Blockquote} node
+ * @param {Parents | undefined} _
+ * @param {State} state
+ * @param {Info} info
+ * @returns {string}
+ */
+function blockquote(node, _, state, info) {
+  const exit = state.enter('blockquote')
+  const tracker = state.createTracker(info)
+  tracker.move('> ')
+  tracker.shift(2)
+  const value = state.indentLines(
+    state.containerFlow(node, tracker.current()),
+    map
+  )
+  exit()
+  return value
+}
+
+/** @type {Map} */
+function map(line, _, blank) {
+  return '>' + (blank ? '' : ' ') + line
+}
+
+// EXTERNAL MODULE: ./node_modules/mdast-util-to-markdown/lib/util/pattern-in-scope.js
+var pattern_in_scope = __nccwpck_require__(5386);
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/handle/break.js
+/**
+ * @typedef {import('mdast').Break} Break
+ * @typedef {import('mdast').Parents} Parents
+ * @typedef {import('../types.js').Info} Info
+ * @typedef {import('../types.js').State} State
+ */
+
+
+
+/**
+ * @param {Break} _
+ * @param {Parents | undefined} _1
+ * @param {State} state
+ * @param {Info} info
+ * @returns {string}
+ */
+function hardBreak(_, _1, state, info) {
+  let index = -1
+
+  while (++index < state.unsafe.length) {
+    // If we can’t put eols in this construct (setext headings, tables), use a
+    // space instead.
+    if (
+      state.unsafe[index].character === '\n' &&
+      (0,pattern_in_scope/* patternInScope */.P)(state.stack, state.unsafe[index])
+    ) {
+      return /[ \t]/.test(info.before) ? '' : ' '
+    }
+  }
+
+  return '\\\n'
+}
+
+;// CONCATENATED MODULE: ./node_modules/longest-streak/index.js
+/**
+ * Get the count of the longest repeating streak of `substring` in `value`.
+ *
+ * @param {string} value
+ *   Content to search in.
+ * @param {string} substring
+ *   Substring to look for, typically one character.
+ * @returns {number}
+ *   Count of most frequent adjacent `substring`s in `value`.
+ */
+function longestStreak(value, substring) {
+  const source = String(value)
+  let index = source.indexOf(substring)
+  let expected = index
+  let count = 0
+  let max = 0
+
+  if (typeof substring !== 'string') {
+    throw new TypeError('Expected substring')
+  }
+
+  while (index !== -1) {
+    if (index === expected) {
+      if (++count > max) {
+        max = count
+      }
+    } else {
+      count = 1
+    }
+
+    expected = index + substring.length
+    index = source.indexOf(substring, expected)
+  }
+
+  return max
+}
+
+// EXTERNAL MODULE: ./node_modules/mdast-util-to-markdown/lib/util/format-code-as-indented.js
+var format_code_as_indented = __nccwpck_require__(750);
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/util/check-fence.js
+/**
+ * @typedef {import('../types.js').Options} Options
+ * @typedef {import('../types.js').State} State
+ */
+
+/**
+ * @param {State} state
+ * @returns {Exclude<Options['fence'], null | undefined>}
+ */
+function checkFence(state) {
+  const marker = state.options.fence || '`'
+
+  if (marker !== '`' && marker !== '~') {
+    throw new Error(
+      'Cannot serialize code with `' +
+        marker +
+        '` for `options.fence`, expected `` ` `` or `~`'
+    )
+  }
+
+  return marker
+}
+
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/handle/code.js
+/**
+ * @typedef {import('mdast').Code} Code
+ * @typedef {import('mdast').Parents} Parents
+ * @typedef {import('../types.js').Info} Info
+ * @typedef {import('../types.js').Map} Map
+ * @typedef {import('../types.js').State} State
+ */
+
+
+
+
+
+/**
+ * @param {Code} node
+ * @param {Parents | undefined} _
+ * @param {State} state
+ * @param {Info} info
+ * @returns {string}
+ */
+function code(node, _, state, info) {
+  const marker = checkFence(state)
+  const raw = node.value || ''
+  const suffix = marker === '`' ? 'GraveAccent' : 'Tilde'
+
+  if ((0,format_code_as_indented/* formatCodeAsIndented */.A)(node, state)) {
+    const exit = state.enter('codeIndented')
+    const value = state.indentLines(raw, code_map)
+    exit()
+    return value
+  }
+
+  const tracker = state.createTracker(info)
+  const sequence = marker.repeat(Math.max(longestStreak(raw, marker) + 1, 3))
+  const exit = state.enter('codeFenced')
+  let value = tracker.move(sequence)
+
+  if (node.lang) {
+    const subexit = state.enter(`codeFencedLang${suffix}`)
+    value += tracker.move(
+      state.safe(node.lang, {
+        before: value,
+        after: ' ',
+        encode: ['`'],
+        ...tracker.current()
+      })
+    )
+    subexit()
+  }
+
+  if (node.lang && node.meta) {
+    const subexit = state.enter(`codeFencedMeta${suffix}`)
+    value += tracker.move(' ')
+    value += tracker.move(
+      state.safe(node.meta, {
+        before: value,
+        after: '\n',
+        encode: ['`'],
+        ...tracker.current()
+      })
+    )
+    subexit()
+  }
+
+  value += tracker.move('\n')
+
+  if (raw) {
+    value += tracker.move(raw + '\n')
+  }
+
+  value += tracker.move(sequence)
+  exit()
+  return value
+}
+
+/** @type {Map} */
+function code_map(line, _, blank) {
+  return (blank ? '' : '    ') + line
+}
+
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/util/check-quote.js
+/**
+ * @typedef {import('../types.js').Options} Options
+ * @typedef {import('../types.js').State} State
+ */
+
+/**
+ * @param {State} state
+ * @returns {Exclude<Options['quote'], null | undefined>}
+ */
+function checkQuote(state) {
+  const marker = state.options.quote || '"'
+
+  if (marker !== '"' && marker !== "'") {
+    throw new Error(
+      'Cannot serialize title with `' +
+        marker +
+        '` for `options.quote`, expected `"`, or `\'`'
+    )
+  }
+
+  return marker
+}
+
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/handle/definition.js
+/**
+ * @typedef {import('mdast').Definition} Definition
+ * @typedef {import('mdast').Parents} Parents
+ * @typedef {import('../types.js').Info} Info
+ * @typedef {import('../types.js').State} State
+ */
+
+
+
+/**
+ * @param {Definition} node
+ * @param {Parents | undefined} _
+ * @param {State} state
+ * @param {Info} info
+ * @returns {string}
+ */
+function definition(node, _, state, info) {
+  const quote = checkQuote(state)
+  const suffix = quote === '"' ? 'Quote' : 'Apostrophe'
+  const exit = state.enter('definition')
+  let subexit = state.enter('label')
+  const tracker = state.createTracker(info)
+  let value = tracker.move('[')
+  value += tracker.move(
+    state.safe(state.associationId(node), {
+      before: value,
+      after: ']',
+      ...tracker.current()
+    })
+  )
+  value += tracker.move(']: ')
+
+  subexit()
+
+  if (
+    // If there’s no url, or…
+    !node.url ||
+    // If there are control characters or whitespace.
+    /[\0- \u007F]/.test(node.url)
+  ) {
+    subexit = state.enter('destinationLiteral')
+    value += tracker.move('<')
+    value += tracker.move(
+      state.safe(node.url, {before: value, after: '>', ...tracker.current()})
+    )
+    value += tracker.move('>')
+  } else {
+    // No whitespace, raw is prettier.
+    subexit = state.enter('destinationRaw')
+    value += tracker.move(
+      state.safe(node.url, {
+        before: value,
+        after: node.title ? ' ' : '\n',
+        ...tracker.current()
+      })
+    )
+  }
+
+  subexit()
+
+  if (node.title) {
+    subexit = state.enter(`title${suffix}`)
+    value += tracker.move(' ' + quote)
+    value += tracker.move(
+      state.safe(node.title, {
+        before: value,
+        after: quote,
+        ...tracker.current()
+      })
+    )
+    value += tracker.move(quote)
+    subexit()
+  }
+
+  exit()
+
+  return value
+}
+
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/util/check-emphasis.js
+/**
+ * @typedef {import('../types.js').Options} Options
+ * @typedef {import('../types.js').State} State
+ */
+
+/**
+ * @param {State} state
+ * @returns {Exclude<Options['emphasis'], null | undefined>}
+ */
+function checkEmphasis(state) {
+  const marker = state.options.emphasis || '*'
+
+  if (marker !== '*' && marker !== '_') {
+    throw new Error(
+      'Cannot serialize emphasis with `' +
+        marker +
+        '` for `options.emphasis`, expected `*`, or `_`'
+    )
+  }
+
+  return marker
+}
+
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/handle/emphasis.js
+/**
+ * @typedef {import('mdast').Emphasis} Emphasis
+ * @typedef {import('mdast').Parents} Parents
+ * @typedef {import('../types.js').Info} Info
+ * @typedef {import('../types.js').State} State
+ */
+
+
+
+emphasis.peek = emphasisPeek
+
+// To do: there are cases where emphasis cannot “form” depending on the
+// previous or next character of sequences.
+// There’s no way around that though, except for injecting zero-width stuff.
+// Do we need to safeguard against that?
+/**
+ * @param {Emphasis} node
+ * @param {Parents | undefined} _
+ * @param {State} state
+ * @param {Info} info
+ * @returns {string}
+ */
+function emphasis(node, _, state, info) {
+  const marker = checkEmphasis(state)
+  const exit = state.enter('emphasis')
+  const tracker = state.createTracker(info)
+  let value = tracker.move(marker)
+  value += tracker.move(
+    state.containerPhrasing(node, {
+      before: value,
+      after: marker,
+      ...tracker.current()
+    })
+  )
+  value += tracker.move(marker)
+  exit()
+  return value
+}
+
+/**
+ * @param {Emphasis} _
+ * @param {Parents | undefined} _1
+ * @param {State} state
+ * @returns {string}
+ */
+function emphasisPeek(_, _1, state) {
+  return state.options.emphasis || '*'
+}
+
+// EXTERNAL MODULE: ./node_modules/mdast-util-to-markdown/lib/util/format-heading-as-setext.js + 3 modules
+var format_heading_as_setext = __nccwpck_require__(1935);
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/handle/heading.js
+/**
+ * @typedef {import('mdast').Heading} Heading
+ * @typedef {import('mdast').Parents} Parents
+ * @typedef {import('../types.js').Info} Info
+ * @typedef {import('../types.js').State} State
+ */
+
+
+
+/**
+ * @param {Heading} node
+ * @param {Parents | undefined} _
+ * @param {State} state
+ * @param {Info} info
+ * @returns {string}
+ */
+function heading(node, _, state, info) {
+  const rank = Math.max(Math.min(6, node.depth || 1), 1)
+  const tracker = state.createTracker(info)
+
+  if ((0,format_heading_as_setext/* formatHeadingAsSetext */.T)(node, state)) {
+    const exit = state.enter('headingSetext')
+    const subexit = state.enter('phrasing')
+    const value = state.containerPhrasing(node, {
+      ...tracker.current(),
+      before: '\n',
+      after: '\n'
+    })
+    subexit()
+    exit()
+
+    return (
+      value +
+      '\n' +
+      (rank === 1 ? '=' : '-').repeat(
+        // The whole size…
+        value.length -
+          // Minus the position of the character after the last EOL (or
+          // 0 if there is none)…
+          (Math.max(value.lastIndexOf('\r'), value.lastIndexOf('\n')) + 1)
+      )
+    )
+  }
+
+  const sequence = '#'.repeat(rank)
+  const exit = state.enter('headingAtx')
+  const subexit = state.enter('phrasing')
+
+  // Note: for proper tracking, we should reset the output positions when there
+  // is no content returned, because then the space is not output.
+  // Practically, in that case, there is no content, so it doesn’t matter that
+  // we’ve tracked one too many characters.
+  tracker.move(sequence + ' ')
+
+  let value = state.containerPhrasing(node, {
+    before: '# ',
+    after: '\n',
+    ...tracker.current()
+  })
+
+  if (/^[\t ]/.test(value)) {
+    // To do: what effect has the character reference on tracking?
+    value =
+      '&#x' +
+      value.charCodeAt(0).toString(16).toUpperCase() +
+      ';' +
+      value.slice(1)
+  }
+
+  value = value ? sequence + ' ' + value : sequence
+
+  if (state.options.closeAtx) {
+    value += ' ' + sequence
+  }
+
+  subexit()
+  exit()
+
+  return value
+}
+
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/handle/html.js
+/**
+ * @typedef {import('mdast').Html} Html
+ */
+
+html.peek = htmlPeek
+
+/**
+ * @param {Html} node
+ * @returns {string}
+ */
+function html(node) {
+  return node.value || ''
+}
+
+/**
+ * @returns {string}
+ */
+function htmlPeek() {
+  return '<'
+}
+
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/handle/image.js
+/**
+ * @typedef {import('mdast').Image} Image
+ * @typedef {import('mdast').Parents} Parents
+ * @typedef {import('../types.js').Info} Info
+ * @typedef {import('../types.js').State} State
+ */
+
+
+
+image_image.peek = imagePeek
+
+/**
+ * @param {Image} node
+ * @param {Parents | undefined} _
+ * @param {State} state
+ * @param {Info} info
+ * @returns {string}
+ */
+function image_image(node, _, state, info) {
+  const quote = checkQuote(state)
+  const suffix = quote === '"' ? 'Quote' : 'Apostrophe'
+  const exit = state.enter('image')
+  let subexit = state.enter('label')
+  const tracker = state.createTracker(info)
+  let value = tracker.move('![')
+  value += tracker.move(
+    state.safe(node.alt, {before: value, after: ']', ...tracker.current()})
+  )
+  value += tracker.move('](')
+
+  subexit()
+
+  if (
+    // If there’s no url but there is a title…
+    (!node.url && node.title) ||
+    // If there are control characters or whitespace.
+    /[\0- \u007F]/.test(node.url)
+  ) {
+    subexit = state.enter('destinationLiteral')
+    value += tracker.move('<')
+    value += tracker.move(
+      state.safe(node.url, {before: value, after: '>', ...tracker.current()})
+    )
+    value += tracker.move('>')
+  } else {
+    // No whitespace, raw is prettier.
+    subexit = state.enter('destinationRaw')
+    value += tracker.move(
+      state.safe(node.url, {
+        before: value,
+        after: node.title ? ' ' : ')',
+        ...tracker.current()
+      })
+    )
+  }
+
+  subexit()
+
+  if (node.title) {
+    subexit = state.enter(`title${suffix}`)
+    value += tracker.move(' ' + quote)
+    value += tracker.move(
+      state.safe(node.title, {
+        before: value,
+        after: quote,
+        ...tracker.current()
+      })
+    )
+    value += tracker.move(quote)
+    subexit()
+  }
+
+  value += tracker.move(')')
+  exit()
+
+  return value
+}
+
+/**
+ * @returns {string}
+ */
+function imagePeek() {
+  return '!'
+}
+
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/handle/image-reference.js
+/**
+ * @typedef {import('mdast').ImageReference} ImageReference
+ * @typedef {import('mdast').Parents} Parents
+ * @typedef {import('../types.js').Info} Info
+ * @typedef {import('../types.js').State} State
+ */
+
+imageReference.peek = imageReferencePeek
+
+/**
+ * @param {ImageReference} node
+ * @param {Parents | undefined} _
+ * @param {State} state
+ * @param {Info} info
+ * @returns {string}
+ */
+function imageReference(node, _, state, info) {
+  const type = node.referenceType
+  const exit = state.enter('imageReference')
+  let subexit = state.enter('label')
+  const tracker = state.createTracker(info)
+  let value = tracker.move('![')
+  const alt = state.safe(node.alt, {
+    before: value,
+    after: ']',
+    ...tracker.current()
+  })
+  value += tracker.move(alt + '][')
+
+  subexit()
+  // Hide the fact that we’re in phrasing, because escapes don’t work.
+  const stack = state.stack
+  state.stack = []
+  subexit = state.enter('reference')
+  // Note: for proper tracking, we should reset the output positions when we end
+  // up making a `shortcut` reference, because then there is no brace output.
+  // Practically, in that case, there is no content, so it doesn’t matter that
+  // we’ve tracked one too many characters.
+  const reference = state.safe(state.associationId(node), {
+    before: value,
+    after: ']',
+    ...tracker.current()
+  })
+  subexit()
+  state.stack = stack
+  exit()
+
+  if (type === 'full' || !alt || alt !== reference) {
+    value += tracker.move(reference + ']')
+  } else if (type === 'shortcut') {
+    // Remove the unwanted `[`.
+    value = value.slice(0, -1)
+  } else {
+    value += tracker.move(']')
+  }
+
+  return value
+}
+
+/**
+ * @returns {string}
+ */
+function imageReferencePeek() {
+  return '!'
+}
+
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/handle/inline-code.js
+/**
+ * @typedef {import('mdast').InlineCode} InlineCode
+ * @typedef {import('mdast').Parents} Parents
+ * @typedef {import('../types.js').State} State
+ */
+
+inlineCode.peek = inlineCodePeek
+
+/**
+ * @param {InlineCode} node
+ * @param {Parents | undefined} _
+ * @param {State} state
+ * @returns {string}
+ */
+function inlineCode(node, _, state) {
+  let value = node.value || ''
+  let sequence = '`'
+  let index = -1
+
+  // If there is a single grave accent on its own in the code, use a fence of
+  // two.
+  // If there are two in a row, use one.
+  while (new RegExp('(^|[^`])' + sequence + '([^`]|$)').test(value)) {
+    sequence += '`'
+  }
+
+  // If this is not just spaces or eols (tabs don’t count), and either the
+  // first or last character are a space, eol, or tick, then pad with spaces.
+  if (
+    /[^ \r\n]/.test(value) &&
+    ((/^[ \r\n]/.test(value) && /[ \r\n]$/.test(value)) || /^`|`$/.test(value))
+  ) {
+    value = ' ' + value + ' '
+  }
+
+  // We have a potential problem: certain characters after eols could result in
+  // blocks being seen.
+  // For example, if someone injected the string `'\n# b'`, then that would
+  // result in an ATX heading.
+  // We can’t escape characters in `inlineCode`, but because eols are
+  // transformed to spaces when going from markdown to HTML anyway, we can swap
+  // them out.
+  while (++index < state.unsafe.length) {
+    const pattern = state.unsafe[index]
+    const expression = state.compilePattern(pattern)
+    /** @type {RegExpExecArray | null} */
+    let match
+
+    // Only look for `atBreak`s.
+    // Btw: note that `atBreak` patterns will always start the regex at LF or
+    // CR.
+    if (!pattern.atBreak) continue
+
+    while ((match = expression.exec(value))) {
+      let position = match.index
+
+      // Support CRLF (patterns only look for one of the characters).
+      if (
+        value.charCodeAt(position) === 10 /* `\n` */ &&
+        value.charCodeAt(position - 1) === 13 /* `\r` */
+      ) {
+        position--
+      }
+
+      value = value.slice(0, position) + ' ' + value.slice(match.index + 1)
+    }
+  }
+
+  return sequence + value + sequence
+}
+
+/**
+ * @returns {string}
+ */
+function inlineCodePeek() {
+  return '`'
+}
+
+// EXTERNAL MODULE: ./node_modules/mdast-util-to-string/lib/index.js
+var lib = __nccwpck_require__(4216);
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/util/format-link-as-autolink.js
+/**
+ * @typedef {import('mdast').Link} Link
+ * @typedef {import('../types.js').State} State
+ */
+
+
+
+/**
+ * @param {Link} node
+ * @param {State} state
+ * @returns {boolean}
+ */
+function formatLinkAsAutolink(node, state) {
+  const raw = (0,lib/* toString */.B)(node)
+
+  return Boolean(
+    !state.options.resourceLink &&
+      // If there’s a url…
+      node.url &&
+      // And there’s a no title…
+      !node.title &&
+      // And the content of `node` is a single text node…
+      node.children &&
+      node.children.length === 1 &&
+      node.children[0].type === 'text' &&
+      // And if the url is the same as the content…
+      (raw === node.url || 'mailto:' + raw === node.url) &&
+      // And that starts w/ a protocol…
+      /^[a-z][a-z+.-]+:/i.test(node.url) &&
+      // And that doesn’t contain ASCII control codes (character escapes and
+      // references don’t work), space, or angle brackets…
+      !/[\0- <>\u007F]/.test(node.url)
+  )
+}
+
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/handle/link.js
+/**
+ * @typedef {import('mdast').Link} Link
+ * @typedef {import('mdast').Parents} Parents
+ * @typedef {import('../types.js').Exit} Exit
+ * @typedef {import('../types.js').Info} Info
+ * @typedef {import('../types.js').State} State
+ */
+
+
+
+
+link_link.peek = linkPeek
+
+/**
+ * @param {Link} node
+ * @param {Parents | undefined} _
+ * @param {State} state
+ * @param {Info} info
+ * @returns {string}
+ */
+function link_link(node, _, state, info) {
+  const quote = checkQuote(state)
+  const suffix = quote === '"' ? 'Quote' : 'Apostrophe'
+  const tracker = state.createTracker(info)
+  /** @type {Exit} */
+  let exit
+  /** @type {Exit} */
+  let subexit
+
+  if (formatLinkAsAutolink(node, state)) {
+    // Hide the fact that we’re in phrasing, because escapes don’t work.
+    const stack = state.stack
+    state.stack = []
+    exit = state.enter('autolink')
+    let value = tracker.move('<')
+    value += tracker.move(
+      state.containerPhrasing(node, {
+        before: value,
+        after: '>',
+        ...tracker.current()
+      })
+    )
+    value += tracker.move('>')
+    exit()
+    state.stack = stack
+    return value
+  }
+
+  exit = state.enter('link')
+  subexit = state.enter('label')
+  let value = tracker.move('[')
+  value += tracker.move(
+    state.containerPhrasing(node, {
+      before: value,
+      after: '](',
+      ...tracker.current()
+    })
+  )
+  value += tracker.move('](')
+  subexit()
+
+  if (
+    // If there’s no url but there is a title…
+    (!node.url && node.title) ||
+    // If there are control characters or whitespace.
+    /[\0- \u007F]/.test(node.url)
+  ) {
+    subexit = state.enter('destinationLiteral')
+    value += tracker.move('<')
+    value += tracker.move(
+      state.safe(node.url, {before: value, after: '>', ...tracker.current()})
+    )
+    value += tracker.move('>')
+  } else {
+    // No whitespace, raw is prettier.
+    subexit = state.enter('destinationRaw')
+    value += tracker.move(
+      state.safe(node.url, {
+        before: value,
+        after: node.title ? ' ' : ')',
+        ...tracker.current()
+      })
+    )
+  }
+
+  subexit()
+
+  if (node.title) {
+    subexit = state.enter(`title${suffix}`)
+    value += tracker.move(' ' + quote)
+    value += tracker.move(
+      state.safe(node.title, {
+        before: value,
+        after: quote,
+        ...tracker.current()
+      })
+    )
+    value += tracker.move(quote)
+    subexit()
+  }
+
+  value += tracker.move(')')
+
+  exit()
+  return value
+}
+
+/**
+ * @param {Link} node
+ * @param {Parents | undefined} _
+ * @param {State} state
+ * @returns {string}
+ */
+function linkPeek(node, _, state) {
+  return formatLinkAsAutolink(node, state) ? '<' : '['
+}
+
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/handle/link-reference.js
+/**
+ * @typedef {import('mdast').LinkReference} LinkReference
+ * @typedef {import('mdast').Parents} Parents
+ * @typedef {import('../types.js').Info} Info
+ * @typedef {import('../types.js').State} State
+ */
+
+linkReference.peek = linkReferencePeek
+
+/**
+ * @param {LinkReference} node
+ * @param {Parents | undefined} _
+ * @param {State} state
+ * @param {Info} info
+ * @returns {string}
+ */
+function linkReference(node, _, state, info) {
+  const type = node.referenceType
+  const exit = state.enter('linkReference')
+  let subexit = state.enter('label')
+  const tracker = state.createTracker(info)
+  let value = tracker.move('[')
+  const text = state.containerPhrasing(node, {
+    before: value,
+    after: ']',
+    ...tracker.current()
+  })
+  value += tracker.move(text + '][')
+
+  subexit()
+  // Hide the fact that we’re in phrasing, because escapes don’t work.
+  const stack = state.stack
+  state.stack = []
+  subexit = state.enter('reference')
+  // Note: for proper tracking, we should reset the output positions when we end
+  // up making a `shortcut` reference, because then there is no brace output.
+  // Practically, in that case, there is no content, so it doesn’t matter that
+  // we’ve tracked one too many characters.
+  const reference = state.safe(state.associationId(node), {
+    before: value,
+    after: ']',
+    ...tracker.current()
+  })
+  subexit()
+  state.stack = stack
+  exit()
+
+  if (type === 'full' || !text || text !== reference) {
+    value += tracker.move(reference + ']')
+  } else if (type === 'shortcut') {
+    // Remove the unwanted `[`.
+    value = value.slice(0, -1)
+  } else {
+    value += tracker.move(']')
+  }
+
+  return value
+}
+
+/**
+ * @returns {string}
+ */
+function linkReferencePeek() {
+  return '['
+}
+
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/util/check-bullet.js
+/**
+ * @typedef {import('../types.js').Options} Options
+ * @typedef {import('../types.js').State} State
+ */
+
+/**
+ * @param {State} state
+ * @returns {Exclude<Options['bullet'], null | undefined>}
+ */
+function checkBullet(state) {
+  const marker = state.options.bullet || '*'
+
+  if (marker !== '*' && marker !== '+' && marker !== '-') {
+    throw new Error(
+      'Cannot serialize items with `' +
+        marker +
+        '` for `options.bullet`, expected `*`, `+`, or `-`'
+    )
+  }
+
+  return marker
+}
+
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/util/check-bullet-other.js
+/**
+ * @typedef {import('../types.js').Options} Options
+ * @typedef {import('../types.js').State} State
+ */
+
+
+
+/**
+ * @param {State} state
+ * @returns {Exclude<Options['bullet'], null | undefined>}
+ */
+function checkBulletOther(state) {
+  const bullet = checkBullet(state)
+  const bulletOther = state.options.bulletOther
+
+  if (!bulletOther) {
+    return bullet === '*' ? '-' : '*'
+  }
+
+  if (bulletOther !== '*' && bulletOther !== '+' && bulletOther !== '-') {
+    throw new Error(
+      'Cannot serialize items with `' +
+        bulletOther +
+        '` for `options.bulletOther`, expected `*`, `+`, or `-`'
+    )
+  }
+
+  if (bulletOther === bullet) {
+    throw new Error(
+      'Expected `bullet` (`' +
+        bullet +
+        '`) and `bulletOther` (`' +
+        bulletOther +
+        '`) to be different'
+    )
+  }
+
+  return bulletOther
+}
+
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/util/check-bullet-ordered.js
+/**
+ * @typedef {import('../types.js').Options} Options
+ * @typedef {import('../types.js').State} State
+ */
+
+/**
+ * @param {State} state
+ * @returns {Exclude<Options['bulletOrdered'], null | undefined>}
+ */
+function checkBulletOrdered(state) {
+  const marker = state.options.bulletOrdered || '.'
+
+  if (marker !== '.' && marker !== ')') {
+    throw new Error(
+      'Cannot serialize items with `' +
+        marker +
+        '` for `options.bulletOrdered`, expected `.` or `)`'
+    )
+  }
+
+  return marker
+}
+
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/util/check-rule.js
+/**
+ * @typedef {import('../types.js').Options} Options
+ * @typedef {import('../types.js').State} State
+ */
+
+/**
+ * @param {State} state
+ * @returns {Exclude<Options['rule'], null | undefined>}
+ */
+function checkRule(state) {
+  const marker = state.options.rule || '*'
+
+  if (marker !== '*' && marker !== '-' && marker !== '_') {
+    throw new Error(
+      'Cannot serialize rules with `' +
+        marker +
+        '` for `options.rule`, expected `*`, `-`, or `_`'
+    )
+  }
+
+  return marker
+}
+
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/handle/list.js
+/**
+ * @typedef {import('mdast').List} List
+ * @typedef {import('mdast').Parents} Parents
+ * @typedef {import('../types.js').Info} Info
+ * @typedef {import('../types.js').State} State
+ */
+
+
+
+
+
+
+/**
+ * @param {List} node
+ * @param {Parents | undefined} parent
+ * @param {State} state
+ * @param {Info} info
+ * @returns {string}
+ */
+function list(node, parent, state, info) {
+  const exit = state.enter('list')
+  const bulletCurrent = state.bulletCurrent
+  /** @type {string} */
+  let bullet = node.ordered ? checkBulletOrdered(state) : checkBullet(state)
+  /** @type {string} */
+  const bulletOther = node.ordered
+    ? bullet === '.'
+      ? ')'
+      : '.'
+    : checkBulletOther(state)
+  let useDifferentMarker =
+    parent && state.bulletLastUsed ? bullet === state.bulletLastUsed : false
+
+  if (!node.ordered) {
+    const firstListItem = node.children ? node.children[0] : undefined
+
+    // If there’s an empty first list item directly in two list items,
+    // we have to use a different bullet:
+    //
+    // ```markdown
+    // * - *
+    // ```
+    //
+    // …because otherwise it would become one big thematic break.
+    if (
+      // Bullet could be used as a thematic break marker:
+      (bullet === '*' || bullet === '-') &&
+      // Empty first list item:
+      firstListItem &&
+      (!firstListItem.children || !firstListItem.children[0]) &&
+      // Directly in two other list items:
+      state.stack[state.stack.length - 1] === 'list' &&
+      state.stack[state.stack.length - 2] === 'listItem' &&
+      state.stack[state.stack.length - 3] === 'list' &&
+      state.stack[state.stack.length - 4] === 'listItem' &&
+      // That are each the first child.
+      state.indexStack[state.indexStack.length - 1] === 0 &&
+      state.indexStack[state.indexStack.length - 2] === 0 &&
+      state.indexStack[state.indexStack.length - 3] === 0
+    ) {
+      useDifferentMarker = true
+    }
+
+    // If there’s a thematic break at the start of the first list item,
+    // we have to use a different bullet:
+    //
+    // ```markdown
+    // * ---
+    // ```
+    //
+    // …because otherwise it would become one big thematic break.
+    if (checkRule(state) === bullet && firstListItem) {
+      let index = -1
+
+      while (++index < node.children.length) {
+        const item = node.children[index]
+
+        if (
+          item &&
+          item.type === 'listItem' &&
+          item.children &&
+          item.children[0] &&
+          item.children[0].type === 'thematicBreak'
+        ) {
+          useDifferentMarker = true
+          break
+        }
+      }
+    }
+  }
+
+  if (useDifferentMarker) {
+    bullet = bulletOther
+  }
+
+  state.bulletCurrent = bullet
+  const value = state.containerFlow(node, info)
+  state.bulletLastUsed = bullet
+  state.bulletCurrent = bulletCurrent
+  exit()
+  return value
+}
+
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/util/check-list-item-indent.js
+/**
+ * @typedef {import('../types.js').Options} Options
+ * @typedef {import('../types.js').State} State
+ */
+
+/**
+ * @param {State} state
+ * @returns {Exclude<Options['listItemIndent'], null | undefined>}
+ */
+function checkListItemIndent(state) {
+  const style = state.options.listItemIndent || 'one'
+
+  if (style !== 'tab' && style !== 'one' && style !== 'mixed') {
+    throw new Error(
+      'Cannot serialize items with `' +
+        style +
+        '` for `options.listItemIndent`, expected `tab`, `one`, or `mixed`'
+    )
+  }
+
+  return style
+}
+
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/handle/list-item.js
+/**
+ * @typedef {import('mdast').ListItem} ListItem
+ * @typedef {import('mdast').Parents} Parents
+ * @typedef {import('../types.js').Info} Info
+ * @typedef {import('../types.js').Map} Map
+ * @typedef {import('../types.js').State} State
+ */
+
+
+
+
+/**
+ * @param {ListItem} node
+ * @param {Parents | undefined} parent
+ * @param {State} state
+ * @param {Info} info
+ * @returns {string}
+ */
+function listItem(node, parent, state, info) {
+  const listItemIndent = checkListItemIndent(state)
+  let bullet = state.bulletCurrent || checkBullet(state)
+
+  // Add the marker value for ordered lists.
+  if (parent && parent.type === 'list' && parent.ordered) {
+    bullet =
+      (typeof parent.start === 'number' && parent.start > -1
+        ? parent.start
+        : 1) +
+      (state.options.incrementListMarker === false
+        ? 0
+        : parent.children.indexOf(node)) +
+      bullet
+  }
+
+  let size = bullet.length + 1
+
+  if (
+    listItemIndent === 'tab' ||
+    (listItemIndent === 'mixed' &&
+      ((parent && parent.type === 'list' && parent.spread) || node.spread))
+  ) {
+    size = Math.ceil(size / 4) * 4
+  }
+
+  const tracker = state.createTracker(info)
+  tracker.move(bullet + ' '.repeat(size - bullet.length))
+  tracker.shift(size)
+  const exit = state.enter('listItem')
+  const value = state.indentLines(
+    state.containerFlow(node, tracker.current()),
+    map
+  )
+  exit()
+
+  return value
+
+  /** @type {Map} */
+  function map(line, index, blank) {
+    if (index) {
+      return (blank ? '' : ' '.repeat(size)) + line
+    }
+
+    return (blank ? bullet : bullet + ' '.repeat(size - bullet.length)) + line
+  }
+}
+
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/handle/paragraph.js
+/**
+ * @typedef {import('mdast').Paragraph} Paragraph
+ * @typedef {import('mdast').Parents} Parents
+ * @typedef {import('../types.js').Info} Info
+ * @typedef {import('../types.js').State} State
+ */
+
+/**
+ * @param {Paragraph} node
+ * @param {Parents | undefined} _
+ * @param {State} state
+ * @param {Info} info
+ * @returns {string}
+ */
+function paragraph(node, _, state, info) {
+  const exit = state.enter('paragraph')
+  const subexit = state.enter('phrasing')
+  const value = state.containerPhrasing(node, info)
+  subexit()
+  exit()
+  return value
+}
+
+// EXTERNAL MODULE: ./node_modules/unist-util-is/lib/index.js
+var unist_util_is_lib = __nccwpck_require__(9607);
+;// CONCATENATED MODULE: ./node_modules/mdast-util-phrasing/lib/index.js
+/**
+ * @typedef {import('mdast').Html} Html
+ * @typedef {import('mdast').PhrasingContent} PhrasingContent
+ */
+
+
+
+/**
+ * Check if the given value is *phrasing content*.
+ *
+ * > 👉 **Note**: Excludes `html`, which can be both phrasing or flow.
+ *
+ * @param node
+ *   Thing to check, typically `Node`.
+ * @returns
+ *   Whether `value` is phrasing content.
+ */
+
+const phrasing =
+  /** @type {(node?: unknown) => node is Exclude<PhrasingContent, Html>} */
+  (
+    (0,unist_util_is_lib/* convert */.O)([
+      'break',
+      'delete',
+      'emphasis',
+      // To do: next major: removed since footnotes were added to GFM.
+      'footnote',
+      'footnoteReference',
+      'image',
+      'imageReference',
+      'inlineCode',
+      // Enabled by `mdast-util-math`:
+      'inlineMath',
+      'link',
+      'linkReference',
+      // Enabled by `mdast-util-mdx`:
+      'mdxJsxTextElement',
+      // Enabled by `mdast-util-mdx`:
+      'mdxTextExpression',
+      'strong',
+      'text',
+      // Enabled by `mdast-util-directive`:
+      'textDirective'
+    ])
+  )
+
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/handle/root.js
+/**
+ * @typedef {import('mdast').Parents} Parents
+ * @typedef {import('mdast').Root} Root
+ * @typedef {import('../types.js').Info} Info
+ * @typedef {import('../types.js').State} State
+ */
+
+
+
+/**
+ * @param {Root} node
+ * @param {Parents | undefined} _
+ * @param {State} state
+ * @param {Info} info
+ * @returns {string}
+ */
+function root(node, _, state, info) {
+  // Note: `html` nodes are ambiguous.
+  const hasPhrasing = node.children.some(function (d) {
+    return phrasing(d)
+  })
+  const fn = hasPhrasing ? state.containerPhrasing : state.containerFlow
+  return fn.call(state, node, info)
+}
+
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/util/check-strong.js
+/**
+ * @typedef {import('../types.js').Options} Options
+ * @typedef {import('../types.js').State} State
+ */
+
+/**
+ * @param {State} state
+ * @returns {Exclude<Options['strong'], null | undefined>}
+ */
+function checkStrong(state) {
+  const marker = state.options.strong || '*'
+
+  if (marker !== '*' && marker !== '_') {
+    throw new Error(
+      'Cannot serialize strong with `' +
+        marker +
+        '` for `options.strong`, expected `*`, or `_`'
+    )
+  }
+
+  return marker
+}
+
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/handle/strong.js
+/**
+ * @typedef {import('mdast').Parents} Parents
+ * @typedef {import('mdast').Strong} Strong
+ * @typedef {import('../types.js').Info} Info
+ * @typedef {import('../types.js').State} State
+ */
+
+
+
+strong.peek = strongPeek
+
+// To do: there are cases where emphasis cannot “form” depending on the
+// previous or next character of sequences.
+// There’s no way around that though, except for injecting zero-width stuff.
+// Do we need to safeguard against that?
+/**
+ * @param {Strong} node
+ * @param {Parents | undefined} _
+ * @param {State} state
+ * @param {Info} info
+ * @returns {string}
+ */
+function strong(node, _, state, info) {
+  const marker = checkStrong(state)
+  const exit = state.enter('strong')
+  const tracker = state.createTracker(info)
+  let value = tracker.move(marker + marker)
+  value += tracker.move(
+    state.containerPhrasing(node, {
+      before: value,
+      after: marker,
+      ...tracker.current()
+    })
+  )
+  value += tracker.move(marker + marker)
+  exit()
+  return value
+}
+
+/**
+ * @param {Strong} _
+ * @param {Parents | undefined} _1
+ * @param {State} state
+ * @returns {string}
+ */
+function strongPeek(_, _1, state) {
+  return state.options.strong || '*'
+}
+
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/handle/text.js
+/**
+ * @typedef {import('mdast').Parents} Parents
+ * @typedef {import('mdast').Text} Text
+ * @typedef {import('../types.js').Info} Info
+ * @typedef {import('../types.js').State} State
+ */
+
+/**
+ * @param {Text} node
+ * @param {Parents | undefined} _
+ * @param {State} state
+ * @param {Info} info
+ * @returns {string}
+ */
+function text_text(node, _, state, info) {
+  return state.safe(node.value, info)
+}
+
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/util/check-rule-repetition.js
+/**
+ * @typedef {import('../types.js').Options} Options
+ * @typedef {import('../types.js').State} State
+ */
+
+/**
+ * @param {State} state
+ * @returns {Exclude<Options['ruleRepetition'], null | undefined>}
+ */
+function checkRuleRepetition(state) {
+  const repetition = state.options.ruleRepetition || 3
+
+  if (repetition < 3) {
+    throw new Error(
+      'Cannot serialize rules with repetition `' +
+        repetition +
+        '` for `options.ruleRepetition`, expected `3` or more'
+    )
+  }
+
+  return repetition
+}
+
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/handle/thematic-break.js
+/**
+ * @typedef {import('mdast').Parents} Parents
+ * @typedef {import('mdast').ThematicBreak} ThematicBreak
+ * @typedef {import('../types.js').State} State
+ */
+
+
+
+
+/**
+ * @param {ThematicBreak} _
+ * @param {Parents | undefined} _1
+ * @param {State} state
+ * @returns {string}
+ */
+function thematicBreak(_, _1, state) {
+  const value = (
+    checkRule(state) + (state.options.ruleSpaces ? ' ' : '')
+  ).repeat(checkRuleRepetition(state))
+
+  return state.options.ruleSpaces ? value.slice(0, -1) : value
+}
+
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/handle/index.js
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**
+ * Default (CommonMark) handlers.
+ */
+const handle = {
+  blockquote: blockquote,
+  break: hardBreak,
+  code: code,
+  definition: definition,
+  emphasis: emphasis,
+  hardBreak: hardBreak,
+  heading: heading,
+  html: html,
+  image: image_image,
+  imageReference: imageReference,
+  inlineCode: inlineCode,
+  link: link_link,
+  linkReference: linkReference,
+  list: list,
+  listItem: listItem,
+  paragraph: paragraph,
+  root: root,
+  strong: strong,
+  text: text_text,
+  thematicBreak: thematicBreak
+}
+
+
+/***/ }),
+
+/***/ 2353:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __nccwpck_require__) => {
+
+
+// EXPORTS
+__nccwpck_require__.d(__webpack_exports__, {
+  "x": () => (/* binding */ toMarkdown)
+});
+
+;// CONCATENATED MODULE: ./node_modules/zwitch/index.js
+/**
+ * @callback Handler
+ *   Handle a value, with a certain ID field set to a certain value.
+ *   The ID field is passed to `zwitch`, and it’s value is this function’s
+ *   place on the `handlers` record.
+ * @param {...any} parameters
+ *   Arbitrary parameters passed to the zwitch.
+ *   The first will be an object with a certain ID field set to a certain value.
+ * @returns {any}
+ *   Anything!
+ */
+
+/**
+ * @callback UnknownHandler
+ *   Handle values that do have a certain ID field, but it’s set to a value
+ *   that is not listed in the `handlers` record.
+ * @param {unknown} value
+ *   An object with a certain ID field set to an unknown value.
+ * @param {...any} rest
+ *   Arbitrary parameters passed to the zwitch.
+ * @returns {any}
+ *   Anything!
+ */
+
+/**
+ * @callback InvalidHandler
+ *   Handle values that do not have a certain ID field.
+ * @param {unknown} value
+ *   Any unknown value.
+ * @param {...any} rest
+ *   Arbitrary parameters passed to the zwitch.
+ * @returns {void|null|undefined|never}
+ *   This should crash or return nothing.
+ */
+
+/**
+ * @template {InvalidHandler} [Invalid=InvalidHandler]
+ * @template {UnknownHandler} [Unknown=UnknownHandler]
+ * @template {Record<string, Handler>} [Handlers=Record<string, Handler>]
+ * @typedef Options
+ *   Configuration (required).
+ * @property {Invalid} [invalid]
+ *   Handler to use for invalid values.
+ * @property {Unknown} [unknown]
+ *   Handler to use for unknown values.
+ * @property {Handlers} [handlers]
+ *   Handlers to use.
+ */
+
+const own = {}.hasOwnProperty
+
+/**
+ * Handle values based on a field.
+ *
+ * @template {InvalidHandler} [Invalid=InvalidHandler]
+ * @template {UnknownHandler} [Unknown=UnknownHandler]
+ * @template {Record<string, Handler>} [Handlers=Record<string, Handler>]
+ * @param {string} key
+ *   Field to switch on.
+ * @param {Options<Invalid, Unknown, Handlers>} [options]
+ *   Configuration (required).
+ * @returns {{unknown: Unknown, invalid: Invalid, handlers: Handlers, (...parameters: Parameters<Handlers[keyof Handlers]>): ReturnType<Handlers[keyof Handlers]>, (...parameters: Parameters<Unknown>): ReturnType<Unknown>}}
+ */
+function zwitch(key, options) {
+  const settings = options || {}
+
+  /**
+   * Handle one value.
+   *
+   * Based on the bound `key`, a respective handler will be called.
+   * If `value` is not an object, or doesn’t have a `key` property, the special
+   * “invalid” handler will be called.
+   * If `value` has an unknown `key`, the special “unknown” handler will be
+   * called.
+   *
+   * All arguments, and the context object, are passed through to the handler,
+   * and it’s result is returned.
+   *
+   * @this {unknown}
+   *   Any context object.
+   * @param {unknown} [value]
+   *   Any value.
+   * @param {...unknown} parameters
+   *   Arbitrary parameters passed to the zwitch.
+   * @property {Handler} invalid
+   *   Handle for values that do not have a certain ID field.
+   * @property {Handler} unknown
+   *   Handle values that do have a certain ID field, but it’s set to a value
+   *   that is not listed in the `handlers` record.
+   * @property {Handlers} handlers
+   *   Record of handlers.
+   * @returns {unknown}
+   *   Anything.
+   */
+  function one(value, ...parameters) {
+    /** @type {Handler|undefined} */
+    let fn = one.invalid
+    const handlers = one.handlers
+
+    if (value && own.call(value, key)) {
+      // @ts-expect-error Indexable.
+      const id = String(value[key])
+      // @ts-expect-error Indexable.
+      fn = own.call(handlers, id) ? handlers[id] : one.unknown
+    }
+
+    if (fn) {
+      return fn.call(this, value, ...parameters)
+    }
+  }
+
+  one.handlers = settings.handlers || {}
+  one.invalid = settings.invalid
+  one.unknown = settings.unknown
+
+  // @ts-expect-error: matches!
+  return one
+}
+
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/configure.js
+/**
+ * @typedef {import('./types.js').Options} Options
+ * @typedef {import('./types.js').State} State
+ */
+
+const configure_own = {}.hasOwnProperty
+
+/**
+ * @param {State} base
+ * @param {Options} extension
+ * @returns {State}
+ */
+function configure(base, extension) {
+  let index = -1
+  /** @type {keyof Options} */
+  let key
+
+  // First do subextensions.
+  if (extension.extensions) {
+    while (++index < extension.extensions.length) {
+      configure(base, extension.extensions[index])
+    }
+  }
+
+  for (key in extension) {
+    if (configure_own.call(extension, key)) {
+      switch (key) {
+        case 'extensions': {
+          // Empty.
+          break
+        }
+
+        /* c8 ignore next 4 */
+        case 'unsafe': {
+          list(base[key], extension[key])
+          break
+        }
+
+        case 'join': {
+          list(base[key], extension[key])
+          break
+        }
+
+        case 'handlers': {
+          map(base[key], extension[key])
+          break
+        }
+
+        default: {
+          // @ts-expect-error: matches.
+          base.options[key] = extension[key]
+        }
+      }
+    }
+  }
+
+  return base
+}
+
+/**
+ * @template T
+ * @param {Array<T>} left
+ * @param {Array<T> | null | undefined} right
+ */
+function list(left, right) {
+  if (right) {
+    left.push(...right)
+  }
+}
+
+/**
+ * @template T
+ * @param {Record<string, T>} left
+ * @param {Record<string, T> | null | undefined} right
+ */
+function map(left, right) {
+  if (right) {
+    Object.assign(left, right)
+  }
+}
+
+// EXTERNAL MODULE: ./node_modules/mdast-util-to-markdown/lib/handle/index.js + 32 modules
+var handle = __nccwpck_require__(8969);
+// EXTERNAL MODULE: ./node_modules/mdast-util-to-markdown/lib/util/format-code-as-indented.js
+var format_code_as_indented = __nccwpck_require__(750);
+// EXTERNAL MODULE: ./node_modules/mdast-util-to-markdown/lib/util/format-heading-as-setext.js + 3 modules
+var format_heading_as_setext = __nccwpck_require__(1935);
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/join.js
+/**
+ * @typedef {import('./types.js').Join} Join
+ */
+
+
+
+
+/** @type {Array<Join>} */
+const join = [joinDefaults]
+
+/** @type {Join} */
+function joinDefaults(left, right, parent, state) {
+  // Indented code after list or another indented code.
+  if (
+    right.type === 'code' &&
+    (0,format_code_as_indented/* formatCodeAsIndented */.A)(right, state) &&
+    (left.type === 'list' ||
+      (left.type === right.type && (0,format_code_as_indented/* formatCodeAsIndented */.A)(left, state)))
+  ) {
+    return false
+  }
+
+  // Join children of a list or an item.
+  // In which case, `parent` has a `spread` field.
+  if ('spread' in parent && typeof parent.spread === 'boolean') {
+    if (
+      left.type === 'paragraph' &&
+      // Two paragraphs.
+      (left.type === right.type ||
+        right.type === 'definition' ||
+        // Paragraph followed by a setext heading.
+        (right.type === 'heading' && (0,format_heading_as_setext/* formatHeadingAsSetext */.T)(right, state)))
+    ) {
+      return
+    }
+
+    return parent.spread ? 1 : 0
+  }
+}
+
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/unsafe.js
+/**
+ * @typedef {import('./types.js').ConstructName} ConstructName
+ * @typedef {import('./types.js').Unsafe} Unsafe
+ */
+
+/**
+ * List of constructs that occur in phrasing (paragraphs, headings), but cannot
+ * contain things like attention (emphasis, strong), images, or links.
+ * So they sort of cancel each other out.
+ * Note: could use a better name.
+ *
+ * @type {Array<ConstructName>}
+ */
+const fullPhrasingSpans = [
+  'autolink',
+  'destinationLiteral',
+  'destinationRaw',
+  'reference',
+  'titleQuote',
+  'titleApostrophe'
+]
+
+/** @type {Array<Unsafe>} */
+const unsafe = [
+  {character: '\t', after: '[\\r\\n]', inConstruct: 'phrasing'},
+  {character: '\t', before: '[\\r\\n]', inConstruct: 'phrasing'},
+  {
+    character: '\t',
+    inConstruct: ['codeFencedLangGraveAccent', 'codeFencedLangTilde']
+  },
+  {
+    character: '\r',
+    inConstruct: [
+      'codeFencedLangGraveAccent',
+      'codeFencedLangTilde',
+      'codeFencedMetaGraveAccent',
+      'codeFencedMetaTilde',
+      'destinationLiteral',
+      'headingAtx'
+    ]
+  },
+  {
+    character: '\n',
+    inConstruct: [
+      'codeFencedLangGraveAccent',
+      'codeFencedLangTilde',
+      'codeFencedMetaGraveAccent',
+      'codeFencedMetaTilde',
+      'destinationLiteral',
+      'headingAtx'
+    ]
+  },
+  {character: ' ', after: '[\\r\\n]', inConstruct: 'phrasing'},
+  {character: ' ', before: '[\\r\\n]', inConstruct: 'phrasing'},
+  {
+    character: ' ',
+    inConstruct: ['codeFencedLangGraveAccent', 'codeFencedLangTilde']
+  },
+  // An exclamation mark can start an image, if it is followed by a link or
+  // a link reference.
+  {
+    character: '!',
+    after: '\\[',
+    inConstruct: 'phrasing',
+    notInConstruct: fullPhrasingSpans
+  },
+  // A quote can break out of a title.
+  {character: '"', inConstruct: 'titleQuote'},
+  // A number sign could start an ATX heading if it starts a line.
+  {atBreak: true, character: '#'},
+  {character: '#', inConstruct: 'headingAtx', after: '(?:[\r\n]|$)'},
+  // Dollar sign and percentage are not used in markdown.
+  // An ampersand could start a character reference.
+  {character: '&', after: '[#A-Za-z]', inConstruct: 'phrasing'},
+  // An apostrophe can break out of a title.
+  {character: "'", inConstruct: 'titleApostrophe'},
+  // A left paren could break out of a destination raw.
+  {character: '(', inConstruct: 'destinationRaw'},
+  // A left paren followed by `]` could make something into a link or image.
+  {
+    before: '\\]',
+    character: '(',
+    inConstruct: 'phrasing',
+    notInConstruct: fullPhrasingSpans
+  },
+  // A right paren could start a list item or break out of a destination
+  // raw.
+  {atBreak: true, before: '\\d+', character: ')'},
+  {character: ')', inConstruct: 'destinationRaw'},
+  // An asterisk can start thematic breaks, list items, emphasis, strong.
+  {atBreak: true, character: '*', after: '(?:[ \t\r\n*])'},
+  {character: '*', inConstruct: 'phrasing', notInConstruct: fullPhrasingSpans},
+  // A plus sign could start a list item.
+  {atBreak: true, character: '+', after: '(?:[ \t\r\n])'},
+  // A dash can start thematic breaks, list items, and setext heading
+  // underlines.
+  {atBreak: true, character: '-', after: '(?:[ \t\r\n-])'},
+  // A dot could start a list item.
+  {atBreak: true, before: '\\d+', character: '.', after: '(?:[ \t\r\n]|$)'},
+  // Slash, colon, and semicolon are not used in markdown for constructs.
+  // A less than can start html (flow or text) or an autolink.
+  // HTML could start with an exclamation mark (declaration, cdata, comment),
+  // slash (closing tag), question mark (instruction), or a letter (tag).
+  // An autolink also starts with a letter.
+  // Finally, it could break out of a destination literal.
+  {atBreak: true, character: '<', after: '[!/?A-Za-z]'},
+  {
+    character: '<',
+    after: '[!/?A-Za-z]',
+    inConstruct: 'phrasing',
+    notInConstruct: fullPhrasingSpans
+  },
+  {character: '<', inConstruct: 'destinationLiteral'},
+  // An equals to can start setext heading underlines.
+  {atBreak: true, character: '='},
+  // A greater than can start block quotes and it can break out of a
+  // destination literal.
+  {atBreak: true, character: '>'},
+  {character: '>', inConstruct: 'destinationLiteral'},
+  // Question mark and at sign are not used in markdown for constructs.
+  // A left bracket can start definitions, references, labels,
+  {atBreak: true, character: '['},
+  {character: '[', inConstruct: 'phrasing', notInConstruct: fullPhrasingSpans},
+  {character: '[', inConstruct: ['label', 'reference']},
+  // A backslash can start an escape (when followed by punctuation) or a
+  // hard break (when followed by an eol).
+  // Note: typical escapes are handled in `safe`!
+  {character: '\\', after: '[\\r\\n]', inConstruct: 'phrasing'},
+  // A right bracket can exit labels.
+  {character: ']', inConstruct: ['label', 'reference']},
+  // Caret is not used in markdown for constructs.
+  // An underscore can start emphasis, strong, or a thematic break.
+  {atBreak: true, character: '_'},
+  {character: '_', inConstruct: 'phrasing', notInConstruct: fullPhrasingSpans},
+  // A grave accent can start code (fenced or text), or it can break out of
+  // a grave accent code fence.
+  {atBreak: true, character: '`'},
+  {
+    character: '`',
+    inConstruct: ['codeFencedLangGraveAccent', 'codeFencedMetaGraveAccent']
+  },
+  {character: '`', inConstruct: 'phrasing', notInConstruct: fullPhrasingSpans},
+  // Left brace, vertical bar, right brace are not used in markdown for
+  // constructs.
+  // A tilde can start code (fenced).
+  {atBreak: true, character: '~'}
+]
+
+;// CONCATENATED MODULE: ./node_modules/character-entities/index.js
+/**
+ * Map of named character references.
+ *
+ * @type {Record<string, string>}
+ */
+const characterEntities = {
+  AElig: 'Æ',
+  AMP: '&',
+  Aacute: 'Á',
+  Abreve: 'Ă',
+  Acirc: 'Â',
+  Acy: 'А',
+  Afr: '𝔄',
+  Agrave: 'À',
+  Alpha: 'Α',
+  Amacr: 'Ā',
+  And: '⩓',
+  Aogon: 'Ą',
+  Aopf: '𝔸',
+  ApplyFunction: '⁡',
+  Aring: 'Å',
+  Ascr: '𝒜',
+  Assign: '≔',
+  Atilde: 'Ã',
+  Auml: 'Ä',
+  Backslash: '∖',
+  Barv: '⫧',
+  Barwed: '⌆',
+  Bcy: 'Б',
+  Because: '∵',
+  Bernoullis: 'ℬ',
+  Beta: 'Β',
+  Bfr: '𝔅',
+  Bopf: '𝔹',
+  Breve: '˘',
+  Bscr: 'ℬ',
+  Bumpeq: '≎',
+  CHcy: 'Ч',
+  COPY: '©',
+  Cacute: 'Ć',
+  Cap: '⋒',
+  CapitalDifferentialD: 'ⅅ',
+  Cayleys: 'ℭ',
+  Ccaron: 'Č',
+  Ccedil: 'Ç',
+  Ccirc: 'Ĉ',
+  Cconint: '∰',
+  Cdot: 'Ċ',
+  Cedilla: '¸',
+  CenterDot: '·',
+  Cfr: 'ℭ',
+  Chi: 'Χ',
+  CircleDot: '⊙',
+  CircleMinus: '⊖',
+  CirclePlus: '⊕',
+  CircleTimes: '⊗',
+  ClockwiseContourIntegral: '∲',
+  CloseCurlyDoubleQuote: '”',
+  CloseCurlyQuote: '’',
+  Colon: '∷',
+  Colone: '⩴',
+  Congruent: '≡',
+  Conint: '∯',
+  ContourIntegral: '∮',
+  Copf: 'ℂ',
+  Coproduct: '∐',
+  CounterClockwiseContourIntegral: '∳',
+  Cross: '⨯',
+  Cscr: '𝒞',
+  Cup: '⋓',
+  CupCap: '≍',
+  DD: 'ⅅ',
+  DDotrahd: '⤑',
+  DJcy: 'Ђ',
+  DScy: 'Ѕ',
+  DZcy: 'Џ',
+  Dagger: '‡',
+  Darr: '↡',
+  Dashv: '⫤',
+  Dcaron: 'Ď',
+  Dcy: 'Д',
+  Del: '∇',
+  Delta: 'Δ',
+  Dfr: '𝔇',
+  DiacriticalAcute: '´',
+  DiacriticalDot: '˙',
+  DiacriticalDoubleAcute: '˝',
+  DiacriticalGrave: '`',
+  DiacriticalTilde: '˜',
+  Diamond: '⋄',
+  DifferentialD: 'ⅆ',
+  Dopf: '𝔻',
+  Dot: '¨',
+  DotDot: '⃜',
+  DotEqual: '≐',
+  DoubleContourIntegral: '∯',
+  DoubleDot: '¨',
+  DoubleDownArrow: '⇓',
+  DoubleLeftArrow: '⇐',
+  DoubleLeftRightArrow: '⇔',
+  DoubleLeftTee: '⫤',
+  DoubleLongLeftArrow: '⟸',
+  DoubleLongLeftRightArrow: '⟺',
+  DoubleLongRightArrow: '⟹',
+  DoubleRightArrow: '⇒',
+  DoubleRightTee: '⊨',
+  DoubleUpArrow: '⇑',
+  DoubleUpDownArrow: '⇕',
+  DoubleVerticalBar: '∥',
+  DownArrow: '↓',
+  DownArrowBar: '⤓',
+  DownArrowUpArrow: '⇵',
+  DownBreve: '̑',
+  DownLeftRightVector: '⥐',
+  DownLeftTeeVector: '⥞',
+  DownLeftVector: '↽',
+  DownLeftVectorBar: '⥖',
+  DownRightTeeVector: '⥟',
+  DownRightVector: '⇁',
+  DownRightVectorBar: '⥗',
+  DownTee: '⊤',
+  DownTeeArrow: '↧',
+  Downarrow: '⇓',
+  Dscr: '𝒟',
+  Dstrok: 'Đ',
+  ENG: 'Ŋ',
+  ETH: 'Ð',
+  Eacute: 'É',
+  Ecaron: 'Ě',
+  Ecirc: 'Ê',
+  Ecy: 'Э',
+  Edot: 'Ė',
+  Efr: '𝔈',
+  Egrave: 'È',
+  Element: '∈',
+  Emacr: 'Ē',
+  EmptySmallSquare: '◻',
+  EmptyVerySmallSquare: '▫',
+  Eogon: 'Ę',
+  Eopf: '𝔼',
+  Epsilon: 'Ε',
+  Equal: '⩵',
+  EqualTilde: '≂',
+  Equilibrium: '⇌',
+  Escr: 'ℰ',
+  Esim: '⩳',
+  Eta: 'Η',
+  Euml: 'Ë',
+  Exists: '∃',
+  ExponentialE: 'ⅇ',
+  Fcy: 'Ф',
+  Ffr: '𝔉',
+  FilledSmallSquare: '◼',
+  FilledVerySmallSquare: '▪',
+  Fopf: '𝔽',
+  ForAll: '∀',
+  Fouriertrf: 'ℱ',
+  Fscr: 'ℱ',
+  GJcy: 'Ѓ',
+  GT: '>',
+  Gamma: 'Γ',
+  Gammad: 'Ϝ',
+  Gbreve: 'Ğ',
+  Gcedil: 'Ģ',
+  Gcirc: 'Ĝ',
+  Gcy: 'Г',
+  Gdot: 'Ġ',
+  Gfr: '𝔊',
+  Gg: '⋙',
+  Gopf: '𝔾',
+  GreaterEqual: '≥',
+  GreaterEqualLess: '⋛',
+  GreaterFullEqual: '≧',
+  GreaterGreater: '⪢',
+  GreaterLess: '≷',
+  GreaterSlantEqual: '⩾',
+  GreaterTilde: '≳',
+  Gscr: '𝒢',
+  Gt: '≫',
+  HARDcy: 'Ъ',
+  Hacek: 'ˇ',
+  Hat: '^',
+  Hcirc: 'Ĥ',
+  Hfr: 'ℌ',
+  HilbertSpace: 'ℋ',
+  Hopf: 'ℍ',
+  HorizontalLine: '─',
+  Hscr: 'ℋ',
+  Hstrok: 'Ħ',
+  HumpDownHump: '≎',
+  HumpEqual: '≏',
+  IEcy: 'Е',
+  IJlig: 'Ĳ',
+  IOcy: 'Ё',
+  Iacute: 'Í',
+  Icirc: 'Î',
+  Icy: 'И',
+  Idot: 'İ',
+  Ifr: 'ℑ',
+  Igrave: 'Ì',
+  Im: 'ℑ',
+  Imacr: 'Ī',
+  ImaginaryI: 'ⅈ',
+  Implies: '⇒',
+  Int: '∬',
+  Integral: '∫',
+  Intersection: '⋂',
+  InvisibleComma: '⁣',
+  InvisibleTimes: '⁢',
+  Iogon: 'Į',
+  Iopf: '𝕀',
+  Iota: 'Ι',
+  Iscr: 'ℐ',
+  Itilde: 'Ĩ',
+  Iukcy: 'І',
+  Iuml: 'Ï',
+  Jcirc: 'Ĵ',
+  Jcy: 'Й',
+  Jfr: '𝔍',
+  Jopf: '𝕁',
+  Jscr: '𝒥',
+  Jsercy: 'Ј',
+  Jukcy: 'Є',
+  KHcy: 'Х',
+  KJcy: 'Ќ',
+  Kappa: 'Κ',
+  Kcedil: 'Ķ',
+  Kcy: 'К',
+  Kfr: '𝔎',
+  Kopf: '𝕂',
+  Kscr: '𝒦',
+  LJcy: 'Љ',
+  LT: '<',
+  Lacute: 'Ĺ',
+  Lambda: 'Λ',
+  Lang: '⟪',
+  Laplacetrf: 'ℒ',
+  Larr: '↞',
+  Lcaron: 'Ľ',
+  Lcedil: 'Ļ',
+  Lcy: 'Л',
+  LeftAngleBracket: '⟨',
+  LeftArrow: '←',
+  LeftArrowBar: '⇤',
+  LeftArrowRightArrow: '⇆',
+  LeftCeiling: '⌈',
+  LeftDoubleBracket: '⟦',
+  LeftDownTeeVector: '⥡',
+  LeftDownVector: '⇃',
+  LeftDownVectorBar: '⥙',
+  LeftFloor: '⌊',
+  LeftRightArrow: '↔',
+  LeftRightVector: '⥎',
+  LeftTee: '⊣',
+  LeftTeeArrow: '↤',
+  LeftTeeVector: '⥚',
+  LeftTriangle: '⊲',
+  LeftTriangleBar: '⧏',
+  LeftTriangleEqual: '⊴',
+  LeftUpDownVector: '⥑',
+  LeftUpTeeVector: '⥠',
+  LeftUpVector: '↿',
+  LeftUpVectorBar: '⥘',
+  LeftVector: '↼',
+  LeftVectorBar: '⥒',
+  Leftarrow: '⇐',
+  Leftrightarrow: '⇔',
+  LessEqualGreater: '⋚',
+  LessFullEqual: '≦',
+  LessGreater: '≶',
+  LessLess: '⪡',
+  LessSlantEqual: '⩽',
+  LessTilde: '≲',
+  Lfr: '𝔏',
+  Ll: '⋘',
+  Lleftarrow: '⇚',
+  Lmidot: 'Ŀ',
+  LongLeftArrow: '⟵',
+  LongLeftRightArrow: '⟷',
+  LongRightArrow: '⟶',
+  Longleftarrow: '⟸',
+  Longleftrightarrow: '⟺',
+  Longrightarrow: '⟹',
+  Lopf: '𝕃',
+  LowerLeftArrow: '↙',
+  LowerRightArrow: '↘',
+  Lscr: 'ℒ',
+  Lsh: '↰',
+  Lstrok: 'Ł',
+  Lt: '≪',
+  Map: '⤅',
+  Mcy: 'М',
+  MediumSpace: ' ',
+  Mellintrf: 'ℳ',
+  Mfr: '𝔐',
+  MinusPlus: '∓',
+  Mopf: '𝕄',
+  Mscr: 'ℳ',
+  Mu: 'Μ',
+  NJcy: 'Њ',
+  Nacute: 'Ń',
+  Ncaron: 'Ň',
+  Ncedil: 'Ņ',
+  Ncy: 'Н',
+  NegativeMediumSpace: '​',
+  NegativeThickSpace: '​',
+  NegativeThinSpace: '​',
+  NegativeVeryThinSpace: '​',
+  NestedGreaterGreater: '≫',
+  NestedLessLess: '≪',
+  NewLine: '\n',
+  Nfr: '𝔑',
+  NoBreak: '⁠',
+  NonBreakingSpace: ' ',
+  Nopf: 'ℕ',
+  Not: '⫬',
+  NotCongruent: '≢',
+  NotCupCap: '≭',
+  NotDoubleVerticalBar: '∦',
+  NotElement: '∉',
+  NotEqual: '≠',
+  NotEqualTilde: '≂̸',
+  NotExists: '∄',
+  NotGreater: '≯',
+  NotGreaterEqual: '≱',
+  NotGreaterFullEqual: '≧̸',
+  NotGreaterGreater: '≫̸',
+  NotGreaterLess: '≹',
+  NotGreaterSlantEqual: '⩾̸',
+  NotGreaterTilde: '≵',
+  NotHumpDownHump: '≎̸',
+  NotHumpEqual: '≏̸',
+  NotLeftTriangle: '⋪',
+  NotLeftTriangleBar: '⧏̸',
+  NotLeftTriangleEqual: '⋬',
+  NotLess: '≮',
+  NotLessEqual: '≰',
+  NotLessGreater: '≸',
+  NotLessLess: '≪̸',
+  NotLessSlantEqual: '⩽̸',
+  NotLessTilde: '≴',
+  NotNestedGreaterGreater: '⪢̸',
+  NotNestedLessLess: '⪡̸',
+  NotPrecedes: '⊀',
+  NotPrecedesEqual: '⪯̸',
+  NotPrecedesSlantEqual: '⋠',
+  NotReverseElement: '∌',
+  NotRightTriangle: '⋫',
+  NotRightTriangleBar: '⧐̸',
+  NotRightTriangleEqual: '⋭',
+  NotSquareSubset: '⊏̸',
+  NotSquareSubsetEqual: '⋢',
+  NotSquareSuperset: '⊐̸',
+  NotSquareSupersetEqual: '⋣',
+  NotSubset: '⊂⃒',
+  NotSubsetEqual: '⊈',
+  NotSucceeds: '⊁',
+  NotSucceedsEqual: '⪰̸',
+  NotSucceedsSlantEqual: '⋡',
+  NotSucceedsTilde: '≿̸',
+  NotSuperset: '⊃⃒',
+  NotSupersetEqual: '⊉',
+  NotTilde: '≁',
+  NotTildeEqual: '≄',
+  NotTildeFullEqual: '≇',
+  NotTildeTilde: '≉',
+  NotVerticalBar: '∤',
+  Nscr: '𝒩',
+  Ntilde: 'Ñ',
+  Nu: 'Ν',
+  OElig: 'Œ',
+  Oacute: 'Ó',
+  Ocirc: 'Ô',
+  Ocy: 'О',
+  Odblac: 'Ő',
+  Ofr: '𝔒',
+  Ograve: 'Ò',
+  Omacr: 'Ō',
+  Omega: 'Ω',
+  Omicron: 'Ο',
+  Oopf: '𝕆',
+  OpenCurlyDoubleQuote: '“',
+  OpenCurlyQuote: '‘',
+  Or: '⩔',
+  Oscr: '𝒪',
+  Oslash: 'Ø',
+  Otilde: 'Õ',
+  Otimes: '⨷',
+  Ouml: 'Ö',
+  OverBar: '‾',
+  OverBrace: '⏞',
+  OverBracket: '⎴',
+  OverParenthesis: '⏜',
+  PartialD: '∂',
+  Pcy: 'П',
+  Pfr: '𝔓',
+  Phi: 'Φ',
+  Pi: 'Π',
+  PlusMinus: '±',
+  Poincareplane: 'ℌ',
+  Popf: 'ℙ',
+  Pr: '⪻',
+  Precedes: '≺',
+  PrecedesEqual: '⪯',
+  PrecedesSlantEqual: '≼',
+  PrecedesTilde: '≾',
+  Prime: '″',
+  Product: '∏',
+  Proportion: '∷',
+  Proportional: '∝',
+  Pscr: '𝒫',
+  Psi: 'Ψ',
+  QUOT: '"',
+  Qfr: '𝔔',
+  Qopf: 'ℚ',
+  Qscr: '𝒬',
+  RBarr: '⤐',
+  REG: '®',
+  Racute: 'Ŕ',
+  Rang: '⟫',
+  Rarr: '↠',
+  Rarrtl: '⤖',
+  Rcaron: 'Ř',
+  Rcedil: 'Ŗ',
+  Rcy: 'Р',
+  Re: 'ℜ',
+  ReverseElement: '∋',
+  ReverseEquilibrium: '⇋',
+  ReverseUpEquilibrium: '⥯',
+  Rfr: 'ℜ',
+  Rho: 'Ρ',
+  RightAngleBracket: '⟩',
+  RightArrow: '→',
+  RightArrowBar: '⇥',
+  RightArrowLeftArrow: '⇄',
+  RightCeiling: '⌉',
+  RightDoubleBracket: '⟧',
+  RightDownTeeVector: '⥝',
+  RightDownVector: '⇂',
+  RightDownVectorBar: '⥕',
+  RightFloor: '⌋',
+  RightTee: '⊢',
+  RightTeeArrow: '↦',
+  RightTeeVector: '⥛',
+  RightTriangle: '⊳',
+  RightTriangleBar: '⧐',
+  RightTriangleEqual: '⊵',
+  RightUpDownVector: '⥏',
+  RightUpTeeVector: '⥜',
+  RightUpVector: '↾',
+  RightUpVectorBar: '⥔',
+  RightVector: '⇀',
+  RightVectorBar: '⥓',
+  Rightarrow: '⇒',
+  Ropf: 'ℝ',
+  RoundImplies: '⥰',
+  Rrightarrow: '⇛',
+  Rscr: 'ℛ',
+  Rsh: '↱',
+  RuleDelayed: '⧴',
+  SHCHcy: 'Щ',
+  SHcy: 'Ш',
+  SOFTcy: 'Ь',
+  Sacute: 'Ś',
+  Sc: '⪼',
+  Scaron: 'Š',
+  Scedil: 'Ş',
+  Scirc: 'Ŝ',
+  Scy: 'С',
+  Sfr: '𝔖',
+  ShortDownArrow: '↓',
+  ShortLeftArrow: '←',
+  ShortRightArrow: '→',
+  ShortUpArrow: '↑',
+  Sigma: 'Σ',
+  SmallCircle: '∘',
+  Sopf: '𝕊',
+  Sqrt: '√',
+  Square: '□',
+  SquareIntersection: '⊓',
+  SquareSubset: '⊏',
+  SquareSubsetEqual: '⊑',
+  SquareSuperset: '⊐',
+  SquareSupersetEqual: '⊒',
+  SquareUnion: '⊔',
+  Sscr: '𝒮',
+  Star: '⋆',
+  Sub: '⋐',
+  Subset: '⋐',
+  SubsetEqual: '⊆',
+  Succeeds: '≻',
+  SucceedsEqual: '⪰',
+  SucceedsSlantEqual: '≽',
+  SucceedsTilde: '≿',
+  SuchThat: '∋',
+  Sum: '∑',
+  Sup: '⋑',
+  Superset: '⊃',
+  SupersetEqual: '⊇',
+  Supset: '⋑',
+  THORN: 'Þ',
+  TRADE: '™',
+  TSHcy: 'Ћ',
+  TScy: 'Ц',
+  Tab: '\t',
+  Tau: 'Τ',
+  Tcaron: 'Ť',
+  Tcedil: 'Ţ',
+  Tcy: 'Т',
+  Tfr: '𝔗',
+  Therefore: '∴',
+  Theta: 'Θ',
+  ThickSpace: '  ',
+  ThinSpace: ' ',
+  Tilde: '∼',
+  TildeEqual: '≃',
+  TildeFullEqual: '≅',
+  TildeTilde: '≈',
+  Topf: '𝕋',
+  TripleDot: '⃛',
+  Tscr: '𝒯',
+  Tstrok: 'Ŧ',
+  Uacute: 'Ú',
+  Uarr: '↟',
+  Uarrocir: '⥉',
+  Ubrcy: 'Ў',
+  Ubreve: 'Ŭ',
+  Ucirc: 'Û',
+  Ucy: 'У',
+  Udblac: 'Ű',
+  Ufr: '𝔘',
+  Ugrave: 'Ù',
+  Umacr: 'Ū',
+  UnderBar: '_',
+  UnderBrace: '⏟',
+  UnderBracket: '⎵',
+  UnderParenthesis: '⏝',
+  Union: '⋃',
+  UnionPlus: '⊎',
+  Uogon: 'Ų',
+  Uopf: '𝕌',
+  UpArrow: '↑',
+  UpArrowBar: '⤒',
+  UpArrowDownArrow: '⇅',
+  UpDownArrow: '↕',
+  UpEquilibrium: '⥮',
+  UpTee: '⊥',
+  UpTeeArrow: '↥',
+  Uparrow: '⇑',
+  Updownarrow: '⇕',
+  UpperLeftArrow: '↖',
+  UpperRightArrow: '↗',
+  Upsi: 'ϒ',
+  Upsilon: 'Υ',
+  Uring: 'Ů',
+  Uscr: '𝒰',
+  Utilde: 'Ũ',
+  Uuml: 'Ü',
+  VDash: '⊫',
+  Vbar: '⫫',
+  Vcy: 'В',
+  Vdash: '⊩',
+  Vdashl: '⫦',
+  Vee: '⋁',
+  Verbar: '‖',
+  Vert: '‖',
+  VerticalBar: '∣',
+  VerticalLine: '|',
+  VerticalSeparator: '❘',
+  VerticalTilde: '≀',
+  VeryThinSpace: ' ',
+  Vfr: '𝔙',
+  Vopf: '𝕍',
+  Vscr: '𝒱',
+  Vvdash: '⊪',
+  Wcirc: 'Ŵ',
+  Wedge: '⋀',
+  Wfr: '𝔚',
+  Wopf: '𝕎',
+  Wscr: '𝒲',
+  Xfr: '𝔛',
+  Xi: 'Ξ',
+  Xopf: '𝕏',
+  Xscr: '𝒳',
+  YAcy: 'Я',
+  YIcy: 'Ї',
+  YUcy: 'Ю',
+  Yacute: 'Ý',
+  Ycirc: 'Ŷ',
+  Ycy: 'Ы',
+  Yfr: '𝔜',
+  Yopf: '𝕐',
+  Yscr: '𝒴',
+  Yuml: 'Ÿ',
+  ZHcy: 'Ж',
+  Zacute: 'Ź',
+  Zcaron: 'Ž',
+  Zcy: 'З',
+  Zdot: 'Ż',
+  ZeroWidthSpace: '​',
+  Zeta: 'Ζ',
+  Zfr: 'ℨ',
+  Zopf: 'ℤ',
+  Zscr: '𝒵',
+  aacute: 'á',
+  abreve: 'ă',
+  ac: '∾',
+  acE: '∾̳',
+  acd: '∿',
+  acirc: 'â',
+  acute: '´',
+  acy: 'а',
+  aelig: 'æ',
+  af: '⁡',
+  afr: '𝔞',
+  agrave: 'à',
+  alefsym: 'ℵ',
+  aleph: 'ℵ',
+  alpha: 'α',
+  amacr: 'ā',
+  amalg: '⨿',
+  amp: '&',
+  and: '∧',
+  andand: '⩕',
+  andd: '⩜',
+  andslope: '⩘',
+  andv: '⩚',
+  ang: '∠',
+  ange: '⦤',
+  angle: '∠',
+  angmsd: '∡',
+  angmsdaa: '⦨',
+  angmsdab: '⦩',
+  angmsdac: '⦪',
+  angmsdad: '⦫',
+  angmsdae: '⦬',
+  angmsdaf: '⦭',
+  angmsdag: '⦮',
+  angmsdah: '⦯',
+  angrt: '∟',
+  angrtvb: '⊾',
+  angrtvbd: '⦝',
+  angsph: '∢',
+  angst: 'Å',
+  angzarr: '⍼',
+  aogon: 'ą',
+  aopf: '𝕒',
+  ap: '≈',
+  apE: '⩰',
+  apacir: '⩯',
+  ape: '≊',
+  apid: '≋',
+  apos: "'",
+  approx: '≈',
+  approxeq: '≊',
+  aring: 'å',
+  ascr: '𝒶',
+  ast: '*',
+  asymp: '≈',
+  asympeq: '≍',
+  atilde: 'ã',
+  auml: 'ä',
+  awconint: '∳',
+  awint: '⨑',
+  bNot: '⫭',
+  backcong: '≌',
+  backepsilon: '϶',
+  backprime: '‵',
+  backsim: '∽',
+  backsimeq: '⋍',
+  barvee: '⊽',
+  barwed: '⌅',
+  barwedge: '⌅',
+  bbrk: '⎵',
+  bbrktbrk: '⎶',
+  bcong: '≌',
+  bcy: 'б',
+  bdquo: '„',
+  becaus: '∵',
+  because: '∵',
+  bemptyv: '⦰',
+  bepsi: '϶',
+  bernou: 'ℬ',
+  beta: 'β',
+  beth: 'ℶ',
+  between: '≬',
+  bfr: '𝔟',
+  bigcap: '⋂',
+  bigcirc: '◯',
+  bigcup: '⋃',
+  bigodot: '⨀',
+  bigoplus: '⨁',
+  bigotimes: '⨂',
+  bigsqcup: '⨆',
+  bigstar: '★',
+  bigtriangledown: '▽',
+  bigtriangleup: '△',
+  biguplus: '⨄',
+  bigvee: '⋁',
+  bigwedge: '⋀',
+  bkarow: '⤍',
+  blacklozenge: '⧫',
+  blacksquare: '▪',
+  blacktriangle: '▴',
+  blacktriangledown: '▾',
+  blacktriangleleft: '◂',
+  blacktriangleright: '▸',
+  blank: '␣',
+  blk12: '▒',
+  blk14: '░',
+  blk34: '▓',
+  block: '█',
+  bne: '=⃥',
+  bnequiv: '≡⃥',
+  bnot: '⌐',
+  bopf: '𝕓',
+  bot: '⊥',
+  bottom: '⊥',
+  bowtie: '⋈',
+  boxDL: '╗',
+  boxDR: '╔',
+  boxDl: '╖',
+  boxDr: '╓',
+  boxH: '═',
+  boxHD: '╦',
+  boxHU: '╩',
+  boxHd: '╤',
+  boxHu: '╧',
+  boxUL: '╝',
+  boxUR: '╚',
+  boxUl: '╜',
+  boxUr: '╙',
+  boxV: '║',
+  boxVH: '╬',
+  boxVL: '╣',
+  boxVR: '╠',
+  boxVh: '╫',
+  boxVl: '╢',
+  boxVr: '╟',
+  boxbox: '⧉',
+  boxdL: '╕',
+  boxdR: '╒',
+  boxdl: '┐',
+  boxdr: '┌',
+  boxh: '─',
+  boxhD: '╥',
+  boxhU: '╨',
+  boxhd: '┬',
+  boxhu: '┴',
+  boxminus: '⊟',
+  boxplus: '⊞',
+  boxtimes: '⊠',
+  boxuL: '╛',
+  boxuR: '╘',
+  boxul: '┘',
+  boxur: '└',
+  boxv: '│',
+  boxvH: '╪',
+  boxvL: '╡',
+  boxvR: '╞',
+  boxvh: '┼',
+  boxvl: '┤',
+  boxvr: '├',
+  bprime: '‵',
+  breve: '˘',
+  brvbar: '¦',
+  bscr: '𝒷',
+  bsemi: '⁏',
+  bsim: '∽',
+  bsime: '⋍',
+  bsol: '\\',
+  bsolb: '⧅',
+  bsolhsub: '⟈',
+  bull: '•',
+  bullet: '•',
+  bump: '≎',
+  bumpE: '⪮',
+  bumpe: '≏',
+  bumpeq: '≏',
+  cacute: 'ć',
+  cap: '∩',
+  capand: '⩄',
+  capbrcup: '⩉',
+  capcap: '⩋',
+  capcup: '⩇',
+  capdot: '⩀',
+  caps: '∩︀',
+  caret: '⁁',
+  caron: 'ˇ',
+  ccaps: '⩍',
+  ccaron: 'č',
+  ccedil: 'ç',
+  ccirc: 'ĉ',
+  ccups: '⩌',
+  ccupssm: '⩐',
+  cdot: 'ċ',
+  cedil: '¸',
+  cemptyv: '⦲',
+  cent: '¢',
+  centerdot: '·',
+  cfr: '𝔠',
+  chcy: 'ч',
+  check: '✓',
+  checkmark: '✓',
+  chi: 'χ',
+  cir: '○',
+  cirE: '⧃',
+  circ: 'ˆ',
+  circeq: '≗',
+  circlearrowleft: '↺',
+  circlearrowright: '↻',
+  circledR: '®',
+  circledS: 'Ⓢ',
+  circledast: '⊛',
+  circledcirc: '⊚',
+  circleddash: '⊝',
+  cire: '≗',
+  cirfnint: '⨐',
+  cirmid: '⫯',
+  cirscir: '⧂',
+  clubs: '♣',
+  clubsuit: '♣',
+  colon: ':',
+  colone: '≔',
+  coloneq: '≔',
+  comma: ',',
+  commat: '@',
+  comp: '∁',
+  compfn: '∘',
+  complement: '∁',
+  complexes: 'ℂ',
+  cong: '≅',
+  congdot: '⩭',
+  conint: '∮',
+  copf: '𝕔',
+  coprod: '∐',
+  copy: '©',
+  copysr: '℗',
+  crarr: '↵',
+  cross: '✗',
+  cscr: '𝒸',
+  csub: '⫏',
+  csube: '⫑',
+  csup: '⫐',
+  csupe: '⫒',
+  ctdot: '⋯',
+  cudarrl: '⤸',
+  cudarrr: '⤵',
+  cuepr: '⋞',
+  cuesc: '⋟',
+  cularr: '↶',
+  cularrp: '⤽',
+  cup: '∪',
+  cupbrcap: '⩈',
+  cupcap: '⩆',
+  cupcup: '⩊',
+  cupdot: '⊍',
+  cupor: '⩅',
+  cups: '∪︀',
+  curarr: '↷',
+  curarrm: '⤼',
+  curlyeqprec: '⋞',
+  curlyeqsucc: '⋟',
+  curlyvee: '⋎',
+  curlywedge: '⋏',
+  curren: '¤',
+  curvearrowleft: '↶',
+  curvearrowright: '↷',
+  cuvee: '⋎',
+  cuwed: '⋏',
+  cwconint: '∲',
+  cwint: '∱',
+  cylcty: '⌭',
+  dArr: '⇓',
+  dHar: '⥥',
+  dagger: '†',
+  daleth: 'ℸ',
+  darr: '↓',
+  dash: '‐',
+  dashv: '⊣',
+  dbkarow: '⤏',
+  dblac: '˝',
+  dcaron: 'ď',
+  dcy: 'д',
+  dd: 'ⅆ',
+  ddagger: '‡',
+  ddarr: '⇊',
+  ddotseq: '⩷',
+  deg: '°',
+  delta: 'δ',
+  demptyv: '⦱',
+  dfisht: '⥿',
+  dfr: '𝔡',
+  dharl: '⇃',
+  dharr: '⇂',
+  diam: '⋄',
+  diamond: '⋄',
+  diamondsuit: '♦',
+  diams: '♦',
+  die: '¨',
+  digamma: 'ϝ',
+  disin: '⋲',
+  div: '÷',
+  divide: '÷',
+  divideontimes: '⋇',
+  divonx: '⋇',
+  djcy: 'ђ',
+  dlcorn: '⌞',
+  dlcrop: '⌍',
+  dollar: '$',
+  dopf: '𝕕',
+  dot: '˙',
+  doteq: '≐',
+  doteqdot: '≑',
+  dotminus: '∸',
+  dotplus: '∔',
+  dotsquare: '⊡',
+  doublebarwedge: '⌆',
+  downarrow: '↓',
+  downdownarrows: '⇊',
+  downharpoonleft: '⇃',
+  downharpoonright: '⇂',
+  drbkarow: '⤐',
+  drcorn: '⌟',
+  drcrop: '⌌',
+  dscr: '𝒹',
+  dscy: 'ѕ',
+  dsol: '⧶',
+  dstrok: 'đ',
+  dtdot: '⋱',
+  dtri: '▿',
+  dtrif: '▾',
+  duarr: '⇵',
+  duhar: '⥯',
+  dwangle: '⦦',
+  dzcy: 'џ',
+  dzigrarr: '⟿',
+  eDDot: '⩷',
+  eDot: '≑',
+  eacute: 'é',
+  easter: '⩮',
+  ecaron: 'ě',
+  ecir: '≖',
+  ecirc: 'ê',
+  ecolon: '≕',
+  ecy: 'э',
+  edot: 'ė',
+  ee: 'ⅇ',
+  efDot: '≒',
+  efr: '𝔢',
+  eg: '⪚',
+  egrave: 'è',
+  egs: '⪖',
+  egsdot: '⪘',
+  el: '⪙',
+  elinters: '⏧',
+  ell: 'ℓ',
+  els: '⪕',
+  elsdot: '⪗',
+  emacr: 'ē',
+  empty: '∅',
+  emptyset: '∅',
+  emptyv: '∅',
+  emsp13: ' ',
+  emsp14: ' ',
+  emsp: ' ',
+  eng: 'ŋ',
+  ensp: ' ',
+  eogon: 'ę',
+  eopf: '𝕖',
+  epar: '⋕',
+  eparsl: '⧣',
+  eplus: '⩱',
+  epsi: 'ε',
+  epsilon: 'ε',
+  epsiv: 'ϵ',
+  eqcirc: '≖',
+  eqcolon: '≕',
+  eqsim: '≂',
+  eqslantgtr: '⪖',
+  eqslantless: '⪕',
+  equals: '=',
+  equest: '≟',
+  equiv: '≡',
+  equivDD: '⩸',
+  eqvparsl: '⧥',
+  erDot: '≓',
+  erarr: '⥱',
+  escr: 'ℯ',
+  esdot: '≐',
+  esim: '≂',
+  eta: 'η',
+  eth: 'ð',
+  euml: 'ë',
+  euro: '€',
+  excl: '!',
+  exist: '∃',
+  expectation: 'ℰ',
+  exponentiale: 'ⅇ',
+  fallingdotseq: '≒',
+  fcy: 'ф',
+  female: '♀',
+  ffilig: 'ﬃ',
+  fflig: 'ﬀ',
+  ffllig: 'ﬄ',
+  ffr: '𝔣',
+  filig: 'ﬁ',
+  fjlig: 'fj',
+  flat: '♭',
+  fllig: 'ﬂ',
+  fltns: '▱',
+  fnof: 'ƒ',
+  fopf: '𝕗',
+  forall: '∀',
+  fork: '⋔',
+  forkv: '⫙',
+  fpartint: '⨍',
+  frac12: '½',
+  frac13: '⅓',
+  frac14: '¼',
+  frac15: '⅕',
+  frac16: '⅙',
+  frac18: '⅛',
+  frac23: '⅔',
+  frac25: '⅖',
+  frac34: '¾',
+  frac35: '⅗',
+  frac38: '⅜',
+  frac45: '⅘',
+  frac56: '⅚',
+  frac58: '⅝',
+  frac78: '⅞',
+  frasl: '⁄',
+  frown: '⌢',
+  fscr: '𝒻',
+  gE: '≧',
+  gEl: '⪌',
+  gacute: 'ǵ',
+  gamma: 'γ',
+  gammad: 'ϝ',
+  gap: '⪆',
+  gbreve: 'ğ',
+  gcirc: 'ĝ',
+  gcy: 'г',
+  gdot: 'ġ',
+  ge: '≥',
+  gel: '⋛',
+  geq: '≥',
+  geqq: '≧',
+  geqslant: '⩾',
+  ges: '⩾',
+  gescc: '⪩',
+  gesdot: '⪀',
+  gesdoto: '⪂',
+  gesdotol: '⪄',
+  gesl: '⋛︀',
+  gesles: '⪔',
+  gfr: '𝔤',
+  gg: '≫',
+  ggg: '⋙',
+  gimel: 'ℷ',
+  gjcy: 'ѓ',
+  gl: '≷',
+  glE: '⪒',
+  gla: '⪥',
+  glj: '⪤',
+  gnE: '≩',
+  gnap: '⪊',
+  gnapprox: '⪊',
+  gne: '⪈',
+  gneq: '⪈',
+  gneqq: '≩',
+  gnsim: '⋧',
+  gopf: '𝕘',
+  grave: '`',
+  gscr: 'ℊ',
+  gsim: '≳',
+  gsime: '⪎',
+  gsiml: '⪐',
+  gt: '>',
+  gtcc: '⪧',
+  gtcir: '⩺',
+  gtdot: '⋗',
+  gtlPar: '⦕',
+  gtquest: '⩼',
+  gtrapprox: '⪆',
+  gtrarr: '⥸',
+  gtrdot: '⋗',
+  gtreqless: '⋛',
+  gtreqqless: '⪌',
+  gtrless: '≷',
+  gtrsim: '≳',
+  gvertneqq: '≩︀',
+  gvnE: '≩︀',
+  hArr: '⇔',
+  hairsp: ' ',
+  half: '½',
+  hamilt: 'ℋ',
+  hardcy: 'ъ',
+  harr: '↔',
+  harrcir: '⥈',
+  harrw: '↭',
+  hbar: 'ℏ',
+  hcirc: 'ĥ',
+  hearts: '♥',
+  heartsuit: '♥',
+  hellip: '…',
+  hercon: '⊹',
+  hfr: '𝔥',
+  hksearow: '⤥',
+  hkswarow: '⤦',
+  hoarr: '⇿',
+  homtht: '∻',
+  hookleftarrow: '↩',
+  hookrightarrow: '↪',
+  hopf: '𝕙',
+  horbar: '―',
+  hscr: '𝒽',
+  hslash: 'ℏ',
+  hstrok: 'ħ',
+  hybull: '⁃',
+  hyphen: '‐',
+  iacute: 'í',
+  ic: '⁣',
+  icirc: 'î',
+  icy: 'и',
+  iecy: 'е',
+  iexcl: '¡',
+  iff: '⇔',
+  ifr: '𝔦',
+  igrave: 'ì',
+  ii: 'ⅈ',
+  iiiint: '⨌',
+  iiint: '∭',
+  iinfin: '⧜',
+  iiota: '℩',
+  ijlig: 'ĳ',
+  imacr: 'ī',
+  image: 'ℑ',
+  imagline: 'ℐ',
+  imagpart: 'ℑ',
+  imath: 'ı',
+  imof: '⊷',
+  imped: 'Ƶ',
+  in: '∈',
+  incare: '℅',
+  infin: '∞',
+  infintie: '⧝',
+  inodot: 'ı',
+  int: '∫',
+  intcal: '⊺',
+  integers: 'ℤ',
+  intercal: '⊺',
+  intlarhk: '⨗',
+  intprod: '⨼',
+  iocy: 'ё',
+  iogon: 'į',
+  iopf: '𝕚',
+  iota: 'ι',
+  iprod: '⨼',
+  iquest: '¿',
+  iscr: '𝒾',
+  isin: '∈',
+  isinE: '⋹',
+  isindot: '⋵',
+  isins: '⋴',
+  isinsv: '⋳',
+  isinv: '∈',
+  it: '⁢',
+  itilde: 'ĩ',
+  iukcy: 'і',
+  iuml: 'ï',
+  jcirc: 'ĵ',
+  jcy: 'й',
+  jfr: '𝔧',
+  jmath: 'ȷ',
+  jopf: '𝕛',
+  jscr: '𝒿',
+  jsercy: 'ј',
+  jukcy: 'є',
+  kappa: 'κ',
+  kappav: 'ϰ',
+  kcedil: 'ķ',
+  kcy: 'к',
+  kfr: '𝔨',
+  kgreen: 'ĸ',
+  khcy: 'х',
+  kjcy: 'ќ',
+  kopf: '𝕜',
+  kscr: '𝓀',
+  lAarr: '⇚',
+  lArr: '⇐',
+  lAtail: '⤛',
+  lBarr: '⤎',
+  lE: '≦',
+  lEg: '⪋',
+  lHar: '⥢',
+  lacute: 'ĺ',
+  laemptyv: '⦴',
+  lagran: 'ℒ',
+  lambda: 'λ',
+  lang: '⟨',
+  langd: '⦑',
+  langle: '⟨',
+  lap: '⪅',
+  laquo: '«',
+  larr: '←',
+  larrb: '⇤',
+  larrbfs: '⤟',
+  larrfs: '⤝',
+  larrhk: '↩',
+  larrlp: '↫',
+  larrpl: '⤹',
+  larrsim: '⥳',
+  larrtl: '↢',
+  lat: '⪫',
+  latail: '⤙',
+  late: '⪭',
+  lates: '⪭︀',
+  lbarr: '⤌',
+  lbbrk: '❲',
+  lbrace: '{',
+  lbrack: '[',
+  lbrke: '⦋',
+  lbrksld: '⦏',
+  lbrkslu: '⦍',
+  lcaron: 'ľ',
+  lcedil: 'ļ',
+  lceil: '⌈',
+  lcub: '{',
+  lcy: 'л',
+  ldca: '⤶',
+  ldquo: '“',
+  ldquor: '„',
+  ldrdhar: '⥧',
+  ldrushar: '⥋',
+  ldsh: '↲',
+  le: '≤',
+  leftarrow: '←',
+  leftarrowtail: '↢',
+  leftharpoondown: '↽',
+  leftharpoonup: '↼',
+  leftleftarrows: '⇇',
+  leftrightarrow: '↔',
+  leftrightarrows: '⇆',
+  leftrightharpoons: '⇋',
+  leftrightsquigarrow: '↭',
+  leftthreetimes: '⋋',
+  leg: '⋚',
+  leq: '≤',
+  leqq: '≦',
+  leqslant: '⩽',
+  les: '⩽',
+  lescc: '⪨',
+  lesdot: '⩿',
+  lesdoto: '⪁',
+  lesdotor: '⪃',
+  lesg: '⋚︀',
+  lesges: '⪓',
+  lessapprox: '⪅',
+  lessdot: '⋖',
+  lesseqgtr: '⋚',
+  lesseqqgtr: '⪋',
+  lessgtr: '≶',
+  lesssim: '≲',
+  lfisht: '⥼',
+  lfloor: '⌊',
+  lfr: '𝔩',
+  lg: '≶',
+  lgE: '⪑',
+  lhard: '↽',
+  lharu: '↼',
+  lharul: '⥪',
+  lhblk: '▄',
+  ljcy: 'љ',
+  ll: '≪',
+  llarr: '⇇',
+  llcorner: '⌞',
+  llhard: '⥫',
+  lltri: '◺',
+  lmidot: 'ŀ',
+  lmoust: '⎰',
+  lmoustache: '⎰',
+  lnE: '≨',
+  lnap: '⪉',
+  lnapprox: '⪉',
+  lne: '⪇',
+  lneq: '⪇',
+  lneqq: '≨',
+  lnsim: '⋦',
+  loang: '⟬',
+  loarr: '⇽',
+  lobrk: '⟦',
+  longleftarrow: '⟵',
+  longleftrightarrow: '⟷',
+  longmapsto: '⟼',
+  longrightarrow: '⟶',
+  looparrowleft: '↫',
+  looparrowright: '↬',
+  lopar: '⦅',
+  lopf: '𝕝',
+  loplus: '⨭',
+  lotimes: '⨴',
+  lowast: '∗',
+  lowbar: '_',
+  loz: '◊',
+  lozenge: '◊',
+  lozf: '⧫',
+  lpar: '(',
+  lparlt: '⦓',
+  lrarr: '⇆',
+  lrcorner: '⌟',
+  lrhar: '⇋',
+  lrhard: '⥭',
+  lrm: '‎',
+  lrtri: '⊿',
+  lsaquo: '‹',
+  lscr: '𝓁',
+  lsh: '↰',
+  lsim: '≲',
+  lsime: '⪍',
+  lsimg: '⪏',
+  lsqb: '[',
+  lsquo: '‘',
+  lsquor: '‚',
+  lstrok: 'ł',
+  lt: '<',
+  ltcc: '⪦',
+  ltcir: '⩹',
+  ltdot: '⋖',
+  lthree: '⋋',
+  ltimes: '⋉',
+  ltlarr: '⥶',
+  ltquest: '⩻',
+  ltrPar: '⦖',
+  ltri: '◃',
+  ltrie: '⊴',
+  ltrif: '◂',
+  lurdshar: '⥊',
+  luruhar: '⥦',
+  lvertneqq: '≨︀',
+  lvnE: '≨︀',
+  mDDot: '∺',
+  macr: '¯',
+  male: '♂',
+  malt: '✠',
+  maltese: '✠',
+  map: '↦',
+  mapsto: '↦',
+  mapstodown: '↧',
+  mapstoleft: '↤',
+  mapstoup: '↥',
+  marker: '▮',
+  mcomma: '⨩',
+  mcy: 'м',
+  mdash: '—',
+  measuredangle: '∡',
+  mfr: '𝔪',
+  mho: '℧',
+  micro: 'µ',
+  mid: '∣',
+  midast: '*',
+  midcir: '⫰',
+  middot: '·',
+  minus: '−',
+  minusb: '⊟',
+  minusd: '∸',
+  minusdu: '⨪',
+  mlcp: '⫛',
+  mldr: '…',
+  mnplus: '∓',
+  models: '⊧',
+  mopf: '𝕞',
+  mp: '∓',
+  mscr: '𝓂',
+  mstpos: '∾',
+  mu: 'μ',
+  multimap: '⊸',
+  mumap: '⊸',
+  nGg: '⋙̸',
+  nGt: '≫⃒',
+  nGtv: '≫̸',
+  nLeftarrow: '⇍',
+  nLeftrightarrow: '⇎',
+  nLl: '⋘̸',
+  nLt: '≪⃒',
+  nLtv: '≪̸',
+  nRightarrow: '⇏',
+  nVDash: '⊯',
+  nVdash: '⊮',
+  nabla: '∇',
+  nacute: 'ń',
+  nang: '∠⃒',
+  nap: '≉',
+  napE: '⩰̸',
+  napid: '≋̸',
+  napos: 'ŉ',
+  napprox: '≉',
+  natur: '♮',
+  natural: '♮',
+  naturals: 'ℕ',
+  nbsp: ' ',
+  nbump: '≎̸',
+  nbumpe: '≏̸',
+  ncap: '⩃',
+  ncaron: 'ň',
+  ncedil: 'ņ',
+  ncong: '≇',
+  ncongdot: '⩭̸',
+  ncup: '⩂',
+  ncy: 'н',
+  ndash: '–',
+  ne: '≠',
+  neArr: '⇗',
+  nearhk: '⤤',
+  nearr: '↗',
+  nearrow: '↗',
+  nedot: '≐̸',
+  nequiv: '≢',
+  nesear: '⤨',
+  nesim: '≂̸',
+  nexist: '∄',
+  nexists: '∄',
+  nfr: '𝔫',
+  ngE: '≧̸',
+  nge: '≱',
+  ngeq: '≱',
+  ngeqq: '≧̸',
+  ngeqslant: '⩾̸',
+  nges: '⩾̸',
+  ngsim: '≵',
+  ngt: '≯',
+  ngtr: '≯',
+  nhArr: '⇎',
+  nharr: '↮',
+  nhpar: '⫲',
+  ni: '∋',
+  nis: '⋼',
+  nisd: '⋺',
+  niv: '∋',
+  njcy: 'њ',
+  nlArr: '⇍',
+  nlE: '≦̸',
+  nlarr: '↚',
+  nldr: '‥',
+  nle: '≰',
+  nleftarrow: '↚',
+  nleftrightarrow: '↮',
+  nleq: '≰',
+  nleqq: '≦̸',
+  nleqslant: '⩽̸',
+  nles: '⩽̸',
+  nless: '≮',
+  nlsim: '≴',
+  nlt: '≮',
+  nltri: '⋪',
+  nltrie: '⋬',
+  nmid: '∤',
+  nopf: '𝕟',
+  not: '¬',
+  notin: '∉',
+  notinE: '⋹̸',
+  notindot: '⋵̸',
+  notinva: '∉',
+  notinvb: '⋷',
+  notinvc: '⋶',
+  notni: '∌',
+  notniva: '∌',
+  notnivb: '⋾',
+  notnivc: '⋽',
+  npar: '∦',
+  nparallel: '∦',
+  nparsl: '⫽⃥',
+  npart: '∂̸',
+  npolint: '⨔',
+  npr: '⊀',
+  nprcue: '⋠',
+  npre: '⪯̸',
+  nprec: '⊀',
+  npreceq: '⪯̸',
+  nrArr: '⇏',
+  nrarr: '↛',
+  nrarrc: '⤳̸',
+  nrarrw: '↝̸',
+  nrightarrow: '↛',
+  nrtri: '⋫',
+  nrtrie: '⋭',
+  nsc: '⊁',
+  nsccue: '⋡',
+  nsce: '⪰̸',
+  nscr: '𝓃',
+  nshortmid: '∤',
+  nshortparallel: '∦',
+  nsim: '≁',
+  nsime: '≄',
+  nsimeq: '≄',
+  nsmid: '∤',
+  nspar: '∦',
+  nsqsube: '⋢',
+  nsqsupe: '⋣',
+  nsub: '⊄',
+  nsubE: '⫅̸',
+  nsube: '⊈',
+  nsubset: '⊂⃒',
+  nsubseteq: '⊈',
+  nsubseteqq: '⫅̸',
+  nsucc: '⊁',
+  nsucceq: '⪰̸',
+  nsup: '⊅',
+  nsupE: '⫆̸',
+  nsupe: '⊉',
+  nsupset: '⊃⃒',
+  nsupseteq: '⊉',
+  nsupseteqq: '⫆̸',
+  ntgl: '≹',
+  ntilde: 'ñ',
+  ntlg: '≸',
+  ntriangleleft: '⋪',
+  ntrianglelefteq: '⋬',
+  ntriangleright: '⋫',
+  ntrianglerighteq: '⋭',
+  nu: 'ν',
+  num: '#',
+  numero: '№',
+  numsp: ' ',
+  nvDash: '⊭',
+  nvHarr: '⤄',
+  nvap: '≍⃒',
+  nvdash: '⊬',
+  nvge: '≥⃒',
+  nvgt: '>⃒',
+  nvinfin: '⧞',
+  nvlArr: '⤂',
+  nvle: '≤⃒',
+  nvlt: '<⃒',
+  nvltrie: '⊴⃒',
+  nvrArr: '⤃',
+  nvrtrie: '⊵⃒',
+  nvsim: '∼⃒',
+  nwArr: '⇖',
+  nwarhk: '⤣',
+  nwarr: '↖',
+  nwarrow: '↖',
+  nwnear: '⤧',
+  oS: 'Ⓢ',
+  oacute: 'ó',
+  oast: '⊛',
+  ocir: '⊚',
+  ocirc: 'ô',
+  ocy: 'о',
+  odash: '⊝',
+  odblac: 'ő',
+  odiv: '⨸',
+  odot: '⊙',
+  odsold: '⦼',
+  oelig: 'œ',
+  ofcir: '⦿',
+  ofr: '𝔬',
+  ogon: '˛',
+  ograve: 'ò',
+  ogt: '⧁',
+  ohbar: '⦵',
+  ohm: 'Ω',
+  oint: '∮',
+  olarr: '↺',
+  olcir: '⦾',
+  olcross: '⦻',
+  oline: '‾',
+  olt: '⧀',
+  omacr: 'ō',
+  omega: 'ω',
+  omicron: 'ο',
+  omid: '⦶',
+  ominus: '⊖',
+  oopf: '𝕠',
+  opar: '⦷',
+  operp: '⦹',
+  oplus: '⊕',
+  or: '∨',
+  orarr: '↻',
+  ord: '⩝',
+  order: 'ℴ',
+  orderof: 'ℴ',
+  ordf: 'ª',
+  ordm: 'º',
+  origof: '⊶',
+  oror: '⩖',
+  orslope: '⩗',
+  orv: '⩛',
+  oscr: 'ℴ',
+  oslash: 'ø',
+  osol: '⊘',
+  otilde: 'õ',
+  otimes: '⊗',
+  otimesas: '⨶',
+  ouml: 'ö',
+  ovbar: '⌽',
+  par: '∥',
+  para: '¶',
+  parallel: '∥',
+  parsim: '⫳',
+  parsl: '⫽',
+  part: '∂',
+  pcy: 'п',
+  percnt: '%',
+  period: '.',
+  permil: '‰',
+  perp: '⊥',
+  pertenk: '‱',
+  pfr: '𝔭',
+  phi: 'φ',
+  phiv: 'ϕ',
+  phmmat: 'ℳ',
+  phone: '☎',
+  pi: 'π',
+  pitchfork: '⋔',
+  piv: 'ϖ',
+  planck: 'ℏ',
+  planckh: 'ℎ',
+  plankv: 'ℏ',
+  plus: '+',
+  plusacir: '⨣',
+  plusb: '⊞',
+  pluscir: '⨢',
+  plusdo: '∔',
+  plusdu: '⨥',
+  pluse: '⩲',
+  plusmn: '±',
+  plussim: '⨦',
+  plustwo: '⨧',
+  pm: '±',
+  pointint: '⨕',
+  popf: '𝕡',
+  pound: '£',
+  pr: '≺',
+  prE: '⪳',
+  prap: '⪷',
+  prcue: '≼',
+  pre: '⪯',
+  prec: '≺',
+  precapprox: '⪷',
+  preccurlyeq: '≼',
+  preceq: '⪯',
+  precnapprox: '⪹',
+  precneqq: '⪵',
+  precnsim: '⋨',
+  precsim: '≾',
+  prime: '′',
+  primes: 'ℙ',
+  prnE: '⪵',
+  prnap: '⪹',
+  prnsim: '⋨',
+  prod: '∏',
+  profalar: '⌮',
+  profline: '⌒',
+  profsurf: '⌓',
+  prop: '∝',
+  propto: '∝',
+  prsim: '≾',
+  prurel: '⊰',
+  pscr: '𝓅',
+  psi: 'ψ',
+  puncsp: ' ',
+  qfr: '𝔮',
+  qint: '⨌',
+  qopf: '𝕢',
+  qprime: '⁗',
+  qscr: '𝓆',
+  quaternions: 'ℍ',
+  quatint: '⨖',
+  quest: '?',
+  questeq: '≟',
+  quot: '"',
+  rAarr: '⇛',
+  rArr: '⇒',
+  rAtail: '⤜',
+  rBarr: '⤏',
+  rHar: '⥤',
+  race: '∽̱',
+  racute: 'ŕ',
+  radic: '√',
+  raemptyv: '⦳',
+  rang: '⟩',
+  rangd: '⦒',
+  range: '⦥',
+  rangle: '⟩',
+  raquo: '»',
+  rarr: '→',
+  rarrap: '⥵',
+  rarrb: '⇥',
+  rarrbfs: '⤠',
+  rarrc: '⤳',
+  rarrfs: '⤞',
+  rarrhk: '↪',
+  rarrlp: '↬',
+  rarrpl: '⥅',
+  rarrsim: '⥴',
+  rarrtl: '↣',
+  rarrw: '↝',
+  ratail: '⤚',
+  ratio: '∶',
+  rationals: 'ℚ',
+  rbarr: '⤍',
+  rbbrk: '❳',
+  rbrace: '}',
+  rbrack: ']',
+  rbrke: '⦌',
+  rbrksld: '⦎',
+  rbrkslu: '⦐',
+  rcaron: 'ř',
+  rcedil: 'ŗ',
+  rceil: '⌉',
+  rcub: '}',
+  rcy: 'р',
+  rdca: '⤷',
+  rdldhar: '⥩',
+  rdquo: '”',
+  rdquor: '”',
+  rdsh: '↳',
+  real: 'ℜ',
+  realine: 'ℛ',
+  realpart: 'ℜ',
+  reals: 'ℝ',
+  rect: '▭',
+  reg: '®',
+  rfisht: '⥽',
+  rfloor: '⌋',
+  rfr: '𝔯',
+  rhard: '⇁',
+  rharu: '⇀',
+  rharul: '⥬',
+  rho: 'ρ',
+  rhov: 'ϱ',
+  rightarrow: '→',
+  rightarrowtail: '↣',
+  rightharpoondown: '⇁',
+  rightharpoonup: '⇀',
+  rightleftarrows: '⇄',
+  rightleftharpoons: '⇌',
+  rightrightarrows: '⇉',
+  rightsquigarrow: '↝',
+  rightthreetimes: '⋌',
+  ring: '˚',
+  risingdotseq: '≓',
+  rlarr: '⇄',
+  rlhar: '⇌',
+  rlm: '‏',
+  rmoust: '⎱',
+  rmoustache: '⎱',
+  rnmid: '⫮',
+  roang: '⟭',
+  roarr: '⇾',
+  robrk: '⟧',
+  ropar: '⦆',
+  ropf: '𝕣',
+  roplus: '⨮',
+  rotimes: '⨵',
+  rpar: ')',
+  rpargt: '⦔',
+  rppolint: '⨒',
+  rrarr: '⇉',
+  rsaquo: '›',
+  rscr: '𝓇',
+  rsh: '↱',
+  rsqb: ']',
+  rsquo: '’',
+  rsquor: '’',
+  rthree: '⋌',
+  rtimes: '⋊',
+  rtri: '▹',
+  rtrie: '⊵',
+  rtrif: '▸',
+  rtriltri: '⧎',
+  ruluhar: '⥨',
+  rx: '℞',
+  sacute: 'ś',
+  sbquo: '‚',
+  sc: '≻',
+  scE: '⪴',
+  scap: '⪸',
+  scaron: 'š',
+  sccue: '≽',
+  sce: '⪰',
+  scedil: 'ş',
+  scirc: 'ŝ',
+  scnE: '⪶',
+  scnap: '⪺',
+  scnsim: '⋩',
+  scpolint: '⨓',
+  scsim: '≿',
+  scy: 'с',
+  sdot: '⋅',
+  sdotb: '⊡',
+  sdote: '⩦',
+  seArr: '⇘',
+  searhk: '⤥',
+  searr: '↘',
+  searrow: '↘',
+  sect: '§',
+  semi: ';',
+  seswar: '⤩',
+  setminus: '∖',
+  setmn: '∖',
+  sext: '✶',
+  sfr: '𝔰',
+  sfrown: '⌢',
+  sharp: '♯',
+  shchcy: 'щ',
+  shcy: 'ш',
+  shortmid: '∣',
+  shortparallel: '∥',
+  shy: '­',
+  sigma: 'σ',
+  sigmaf: 'ς',
+  sigmav: 'ς',
+  sim: '∼',
+  simdot: '⩪',
+  sime: '≃',
+  simeq: '≃',
+  simg: '⪞',
+  simgE: '⪠',
+  siml: '⪝',
+  simlE: '⪟',
+  simne: '≆',
+  simplus: '⨤',
+  simrarr: '⥲',
+  slarr: '←',
+  smallsetminus: '∖',
+  smashp: '⨳',
+  smeparsl: '⧤',
+  smid: '∣',
+  smile: '⌣',
+  smt: '⪪',
+  smte: '⪬',
+  smtes: '⪬︀',
+  softcy: 'ь',
+  sol: '/',
+  solb: '⧄',
+  solbar: '⌿',
+  sopf: '𝕤',
+  spades: '♠',
+  spadesuit: '♠',
+  spar: '∥',
+  sqcap: '⊓',
+  sqcaps: '⊓︀',
+  sqcup: '⊔',
+  sqcups: '⊔︀',
+  sqsub: '⊏',
+  sqsube: '⊑',
+  sqsubset: '⊏',
+  sqsubseteq: '⊑',
+  sqsup: '⊐',
+  sqsupe: '⊒',
+  sqsupset: '⊐',
+  sqsupseteq: '⊒',
+  squ: '□',
+  square: '□',
+  squarf: '▪',
+  squf: '▪',
+  srarr: '→',
+  sscr: '𝓈',
+  ssetmn: '∖',
+  ssmile: '⌣',
+  sstarf: '⋆',
+  star: '☆',
+  starf: '★',
+  straightepsilon: 'ϵ',
+  straightphi: 'ϕ',
+  strns: '¯',
+  sub: '⊂',
+  subE: '⫅',
+  subdot: '⪽',
+  sube: '⊆',
+  subedot: '⫃',
+  submult: '⫁',
+  subnE: '⫋',
+  subne: '⊊',
+  subplus: '⪿',
+  subrarr: '⥹',
+  subset: '⊂',
+  subseteq: '⊆',
+  subseteqq: '⫅',
+  subsetneq: '⊊',
+  subsetneqq: '⫋',
+  subsim: '⫇',
+  subsub: '⫕',
+  subsup: '⫓',
+  succ: '≻',
+  succapprox: '⪸',
+  succcurlyeq: '≽',
+  succeq: '⪰',
+  succnapprox: '⪺',
+  succneqq: '⪶',
+  succnsim: '⋩',
+  succsim: '≿',
+  sum: '∑',
+  sung: '♪',
+  sup1: '¹',
+  sup2: '²',
+  sup3: '³',
+  sup: '⊃',
+  supE: '⫆',
+  supdot: '⪾',
+  supdsub: '⫘',
+  supe: '⊇',
+  supedot: '⫄',
+  suphsol: '⟉',
+  suphsub: '⫗',
+  suplarr: '⥻',
+  supmult: '⫂',
+  supnE: '⫌',
+  supne: '⊋',
+  supplus: '⫀',
+  supset: '⊃',
+  supseteq: '⊇',
+  supseteqq: '⫆',
+  supsetneq: '⊋',
+  supsetneqq: '⫌',
+  supsim: '⫈',
+  supsub: '⫔',
+  supsup: '⫖',
+  swArr: '⇙',
+  swarhk: '⤦',
+  swarr: '↙',
+  swarrow: '↙',
+  swnwar: '⤪',
+  szlig: 'ß',
+  target: '⌖',
+  tau: 'τ',
+  tbrk: '⎴',
+  tcaron: 'ť',
+  tcedil: 'ţ',
+  tcy: 'т',
+  tdot: '⃛',
+  telrec: '⌕',
+  tfr: '𝔱',
+  there4: '∴',
+  therefore: '∴',
+  theta: 'θ',
+  thetasym: 'ϑ',
+  thetav: 'ϑ',
+  thickapprox: '≈',
+  thicksim: '∼',
+  thinsp: ' ',
+  thkap: '≈',
+  thksim: '∼',
+  thorn: 'þ',
+  tilde: '˜',
+  times: '×',
+  timesb: '⊠',
+  timesbar: '⨱',
+  timesd: '⨰',
+  tint: '∭',
+  toea: '⤨',
+  top: '⊤',
+  topbot: '⌶',
+  topcir: '⫱',
+  topf: '𝕥',
+  topfork: '⫚',
+  tosa: '⤩',
+  tprime: '‴',
+  trade: '™',
+  triangle: '▵',
+  triangledown: '▿',
+  triangleleft: '◃',
+  trianglelefteq: '⊴',
+  triangleq: '≜',
+  triangleright: '▹',
+  trianglerighteq: '⊵',
+  tridot: '◬',
+  trie: '≜',
+  triminus: '⨺',
+  triplus: '⨹',
+  trisb: '⧍',
+  tritime: '⨻',
+  trpezium: '⏢',
+  tscr: '𝓉',
+  tscy: 'ц',
+  tshcy: 'ћ',
+  tstrok: 'ŧ',
+  twixt: '≬',
+  twoheadleftarrow: '↞',
+  twoheadrightarrow: '↠',
+  uArr: '⇑',
+  uHar: '⥣',
+  uacute: 'ú',
+  uarr: '↑',
+  ubrcy: 'ў',
+  ubreve: 'ŭ',
+  ucirc: 'û',
+  ucy: 'у',
+  udarr: '⇅',
+  udblac: 'ű',
+  udhar: '⥮',
+  ufisht: '⥾',
+  ufr: '𝔲',
+  ugrave: 'ù',
+  uharl: '↿',
+  uharr: '↾',
+  uhblk: '▀',
+  ulcorn: '⌜',
+  ulcorner: '⌜',
+  ulcrop: '⌏',
+  ultri: '◸',
+  umacr: 'ū',
+  uml: '¨',
+  uogon: 'ų',
+  uopf: '𝕦',
+  uparrow: '↑',
+  updownarrow: '↕',
+  upharpoonleft: '↿',
+  upharpoonright: '↾',
+  uplus: '⊎',
+  upsi: 'υ',
+  upsih: 'ϒ',
+  upsilon: 'υ',
+  upuparrows: '⇈',
+  urcorn: '⌝',
+  urcorner: '⌝',
+  urcrop: '⌎',
+  uring: 'ů',
+  urtri: '◹',
+  uscr: '𝓊',
+  utdot: '⋰',
+  utilde: 'ũ',
+  utri: '▵',
+  utrif: '▴',
+  uuarr: '⇈',
+  uuml: 'ü',
+  uwangle: '⦧',
+  vArr: '⇕',
+  vBar: '⫨',
+  vBarv: '⫩',
+  vDash: '⊨',
+  vangrt: '⦜',
+  varepsilon: 'ϵ',
+  varkappa: 'ϰ',
+  varnothing: '∅',
+  varphi: 'ϕ',
+  varpi: 'ϖ',
+  varpropto: '∝',
+  varr: '↕',
+  varrho: 'ϱ',
+  varsigma: 'ς',
+  varsubsetneq: '⊊︀',
+  varsubsetneqq: '⫋︀',
+  varsupsetneq: '⊋︀',
+  varsupsetneqq: '⫌︀',
+  vartheta: 'ϑ',
+  vartriangleleft: '⊲',
+  vartriangleright: '⊳',
+  vcy: 'в',
+  vdash: '⊢',
+  vee: '∨',
+  veebar: '⊻',
+  veeeq: '≚',
+  vellip: '⋮',
+  verbar: '|',
+  vert: '|',
+  vfr: '𝔳',
+  vltri: '⊲',
+  vnsub: '⊂⃒',
+  vnsup: '⊃⃒',
+  vopf: '𝕧',
+  vprop: '∝',
+  vrtri: '⊳',
+  vscr: '𝓋',
+  vsubnE: '⫋︀',
+  vsubne: '⊊︀',
+  vsupnE: '⫌︀',
+  vsupne: '⊋︀',
+  vzigzag: '⦚',
+  wcirc: 'ŵ',
+  wedbar: '⩟',
+  wedge: '∧',
+  wedgeq: '≙',
+  weierp: '℘',
+  wfr: '𝔴',
+  wopf: '𝕨',
+  wp: '℘',
+  wr: '≀',
+  wreath: '≀',
+  wscr: '𝓌',
+  xcap: '⋂',
+  xcirc: '◯',
+  xcup: '⋃',
+  xdtri: '▽',
+  xfr: '𝔵',
+  xhArr: '⟺',
+  xharr: '⟷',
+  xi: 'ξ',
+  xlArr: '⟸',
+  xlarr: '⟵',
+  xmap: '⟼',
+  xnis: '⋻',
+  xodot: '⨀',
+  xopf: '𝕩',
+  xoplus: '⨁',
+  xotime: '⨂',
+  xrArr: '⟹',
+  xrarr: '⟶',
+  xscr: '𝓍',
+  xsqcup: '⨆',
+  xuplus: '⨄',
+  xutri: '△',
+  xvee: '⋁',
+  xwedge: '⋀',
+  yacute: 'ý',
+  yacy: 'я',
+  ycirc: 'ŷ',
+  ycy: 'ы',
+  yen: '¥',
+  yfr: '𝔶',
+  yicy: 'ї',
+  yopf: '𝕪',
+  yscr: '𝓎',
+  yucy: 'ю',
+  yuml: 'ÿ',
+  zacute: 'ź',
+  zcaron: 'ž',
+  zcy: 'з',
+  zdot: 'ż',
+  zeetrf: 'ℨ',
+  zeta: 'ζ',
+  zfr: '𝔷',
+  zhcy: 'ж',
+  zigrarr: '⇝',
+  zopf: '𝕫',
+  zscr: '𝓏',
+  zwj: '‍',
+  zwnj: '‌'
+}
+
+;// CONCATENATED MODULE: ./node_modules/decode-named-character-reference/index.js
+
+
+const decode_named_character_reference_own = {}.hasOwnProperty
+
+/**
+ * Decode a single character reference (without the `&` or `;`).
+ * You probably only need this when you’re building parsers yourself that follow
+ * different rules compared to HTML.
+ * This is optimized to be tiny in browsers.
+ *
+ * @param {string} value
+ *   `notin` (named), `#123` (deci), `#x123` (hexa).
+ * @returns {string|false}
+ *   Decoded reference.
+ */
+function decodeNamedCharacterReference(value) {
+  return decode_named_character_reference_own.call(characterEntities, value) ? characterEntities[value] : false
+}
+
+;// CONCATENATED MODULE: ./node_modules/micromark-util-decode-numeric-character-reference/index.js
+/**
+ * Turn the number (in string form as either hexa- or plain decimal) coming from
+ * a numeric character reference into a character.
+ *
+ * Sort of like `String.fromCodePoint(Number.parseInt(value, base))`, but makes
+ * non-characters and control characters safe.
+ *
+ * @param {string} value
+ *   Value to decode.
+ * @param {number} base
+ *   Numeric base.
+ * @returns {string}
+ *   Character.
+ */
+function decodeNumericCharacterReference(value, base) {
+  const code = Number.parseInt(value, base);
+  if (
+  // C0 except for HT, LF, FF, CR, space.
+  code < 9 || code === 11 || code > 13 && code < 32 ||
+  // Control character (DEL) of C0, and C1 controls.
+  code > 126 && code < 160 ||
+  // Lone high surrogates and low surrogates.
+  code > 55_295 && code < 57_344 ||
+  // Noncharacters.
+  code > 64_975 && code < 65_008 || /* eslint-disable no-bitwise */
+  (code & 65_535) === 65_535 || (code & 65_535) === 65_534 || /* eslint-enable no-bitwise */
+  // Out of range
+  code > 1_114_111) {
+    return "\uFFFD";
+  }
+  return String.fromCodePoint(code);
+}
+;// CONCATENATED MODULE: ./node_modules/micromark-util-decode-string/index.js
+
+
+const characterEscapeOrReference =
+  /\\([!-/:-@[-`{-~])|&(#(?:\d{1,7}|x[\da-f]{1,6})|[\da-z]{1,31});/gi
+
+/**
+ * Decode markdown strings (which occur in places such as fenced code info
+ * strings, destinations, labels, and titles).
+ *
+ * The “string” content type allows character escapes and -references.
+ * This decodes those.
+ *
+ * @param {string} value
+ *   Value to decode.
+ * @returns {string}
+ *   Decoded value.
+ */
+function decodeString(value) {
+  return value.replace(characterEscapeOrReference, decode)
+}
+
+/**
+ * @param {string} $0
+ * @param {string} $1
+ * @param {string} $2
+ * @returns {string}
+ */
+function decode($0, $1, $2) {
+  if ($1) {
+    // Escape.
+    return $1
+  }
+
+  // Reference.
+  const head = $2.charCodeAt(0)
+  if (head === 35) {
+    const head = $2.charCodeAt(1)
+    const hex = head === 120 || head === 88
+    return decodeNumericCharacterReference($2.slice(hex ? 2 : 1), hex ? 16 : 10)
+  }
+  return decodeNamedCharacterReference($2) || $0
+}
+
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/util/association.js
+/**
+ * @typedef {import('../types.js').AssociationId} AssociationId
+ */
+
+
+
+/**
+ * Get an identifier from an association to match it to others.
+ *
+ * Associations are nodes that match to something else through an ID:
+ * <https://github.com/syntax-tree/mdast#association>.
+ *
+ * The `label` of an association is the string value: character escapes and
+ * references work, and casing is intact.
+ * The `identifier` is used to match one association to another:
+ * controversially, character escapes and references don’t work in this
+ * matching: `&copy;` does not match `©`, and `\+` does not match `+`.
+ *
+ * But casing is ignored (and whitespace) is trimmed and collapsed: ` A\nb`
+ * matches `a b`.
+ * So, we do prefer the label when figuring out how we’re going to serialize:
+ * it has whitespace, casing, and we can ignore most useless character
+ * escapes and all character references.
+ *
+ * @type {AssociationId}
+ */
+function association(node) {
+  if (node.label || !node.identifier) {
+    return node.label || ''
+  }
+
+  return decodeString(node.identifier)
+}
+
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/util/compile-pattern.js
+/**
+ * @typedef {import('../types.js').CompilePattern} CompilePattern
+ */
+
+/**
+ * @type {CompilePattern}
+ */
+function compilePattern(pattern) {
+  if (!pattern._compiled) {
+    const before =
+      (pattern.atBreak ? '[\\r\\n][\\t ]*' : '') +
+      (pattern.before ? '(?:' + pattern.before + ')' : '')
+
+    pattern._compiled = new RegExp(
+      (before ? '(' + before + ')' : '') +
+        (/[|\\{}()[\]^$+*?.-]/.test(pattern.character) ? '\\' : '') +
+        pattern.character +
+        (pattern.after ? '(?:' + pattern.after + ')' : ''),
+      'g'
+    )
+  }
+
+  return pattern._compiled
+}
+
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/util/container-phrasing.js
+/**
+ * @typedef {import('../types.js').Handle} Handle
+ * @typedef {import('../types.js').Info} Info
+ * @typedef {import('../types.js').PhrasingParents} PhrasingParents
+ * @typedef {import('../types.js').State} State
+ */
+
+/**
+ * Serialize the children of a parent that contains phrasing children.
+ *
+ * These children will be joined flush together.
+ *
+ * @param {PhrasingParents} parent
+ *   Parent of flow nodes.
+ * @param {State} state
+ *   Info passed around about the current state.
+ * @param {Info} info
+ *   Info on where we are in the document we are generating.
+ * @returns {string}
+ *   Serialized children, joined together.
+ */
+function containerPhrasing(parent, state, info) {
+  const indexStack = state.indexStack
+  const children = parent.children || []
+  /** @type {Array<string>} */
+  const results = []
+  let index = -1
+  let before = info.before
+
+  indexStack.push(-1)
+  let tracker = state.createTracker(info)
+
+  while (++index < children.length) {
+    const child = children[index]
+    /** @type {string} */
+    let after
+
+    indexStack[indexStack.length - 1] = index
+
+    if (index + 1 < children.length) {
+      /** @type {Handle} */
+      // @ts-expect-error: hush, it’s actually a `zwitch`.
+      let handle = state.handle.handlers[children[index + 1].type]
+      /** @type {Handle} */
+      // @ts-expect-error: hush, it’s actually a `zwitch`.
+      if (handle && handle.peek) handle = handle.peek
+      after = handle
+        ? handle(children[index + 1], parent, state, {
+            before: '',
+            after: '',
+            ...tracker.current()
+          }).charAt(0)
+        : ''
+    } else {
+      after = info.after
+    }
+
+    // In some cases, html (text) can be found in phrasing right after an eol.
+    // When we’d serialize that, in most cases that would be seen as html
+    // (flow).
+    // As we can’t escape or so to prevent it from happening, we take a somewhat
+    // reasonable approach: replace that eol with a space.
+    // See: <https://github.com/syntax-tree/mdast-util-to-markdown/issues/15>
+    if (
+      results.length > 0 &&
+      (before === '\r' || before === '\n') &&
+      child.type === 'html'
+    ) {
+      results[results.length - 1] = results[results.length - 1].replace(
+        /(\r?\n|\r)$/,
+        ' '
+      )
+      before = ' '
+
+      // To do: does this work to reset tracker?
+      tracker = state.createTracker(info)
+      tracker.move(results.join(''))
+    }
+
+    results.push(
+      tracker.move(
+        state.handle(child, parent, state, {
+          ...tracker.current(),
+          before,
+          after
+        })
+      )
+    )
+
+    before = results[results.length - 1].slice(-1)
+  }
+
+  indexStack.pop()
+
+  return results.join('')
+}
+
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/util/container-flow.js
+/**
+ * @typedef {import('../types.js').FlowParents} FlowParents
+ * @typedef {import('../types.js').FlowChildren} FlowChildren
+ * @typedef {import('../types.js').State} State
+ * @typedef {import('../types.js').TrackFields} TrackFields
+ */
+
+/**
+ * @param {FlowParents} parent
+ *   Parent of flow nodes.
+ * @param {State} state
+ *   Info passed around about the current state.
+ * @param {TrackFields} info
+ *   Info on where we are in the document we are generating.
+ * @returns {string}
+ *   Serialized children, joined by (blank) lines.
+ */
+function containerFlow(parent, state, info) {
+  const indexStack = state.indexStack
+  const children = parent.children || []
+  const tracker = state.createTracker(info)
+  /** @type {Array<string>} */
+  const results = []
+  let index = -1
+
+  indexStack.push(-1)
+
+  while (++index < children.length) {
+    const child = children[index]
+
+    indexStack[indexStack.length - 1] = index
+
+    results.push(
+      tracker.move(
+        state.handle(child, parent, state, {
+          before: '\n',
+          after: '\n',
+          ...tracker.current()
+        })
+      )
+    )
+
+    if (child.type !== 'list') {
+      state.bulletLastUsed = undefined
+    }
+
+    if (index < children.length - 1) {
+      results.push(
+        tracker.move(between(child, children[index + 1], parent, state))
+      )
+    }
+  }
+
+  indexStack.pop()
+
+  return results.join('')
+}
+
+/**
+ * @param {FlowChildren} left
+ * @param {FlowChildren} right
+ * @param {FlowParents} parent
+ * @param {State} state
+ * @returns {string}
+ */
+function between(left, right, parent, state) {
+  let index = state.join.length
+
+  while (index--) {
+    const result = state.join[index](left, right, parent, state)
+
+    if (result === true || result === 1) {
+      break
+    }
+
+    if (typeof result === 'number') {
+      return '\n'.repeat(1 + result)
+    }
+
+    if (result === false) {
+      return '\n\n<!---->\n\n'
+    }
+  }
+
+  return '\n\n'
+}
+
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/util/indent-lines.js
+/**
+ * @typedef {import('../types.js').IndentLines} IndentLines
+ */
+
+const eol = /\r?\n|\r/g
+
+/**
+ * @type {IndentLines}
+ */
+function indentLines(value, map) {
+  /** @type {Array<string>} */
+  const result = []
+  let start = 0
+  let line = 0
+  /** @type {RegExpExecArray | null} */
+  let match
+
+  while ((match = eol.exec(value))) {
+    one(value.slice(start, match.index))
+    result.push(match[0])
+    start = match.index + match[0].length
+    line++
+  }
+
+  one(value.slice(start))
+
+  return result.join('')
+
+  /**
+   * @param {string} value
+   */
+  function one(value) {
+    result.push(map(value, line, !value))
+  }
+}
+
+// EXTERNAL MODULE: ./node_modules/mdast-util-to-markdown/lib/util/pattern-in-scope.js
+var pattern_in_scope = __nccwpck_require__(5386);
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/util/safe.js
+/**
+ * @typedef {import('../types.js').SafeConfig} SafeConfig
+ * @typedef {import('../types.js').State} State
+ */
+
+
+
+/**
+ * Make a string safe for embedding in markdown constructs.
+ *
+ * In markdown, almost all punctuation characters can, in certain cases,
+ * result in something.
+ * Whether they do is highly subjective to where they happen and in what
+ * they happen.
+ *
+ * To solve this, `mdast-util-to-markdown` tracks:
+ *
+ * * Characters before and after something;
+ * * What “constructs” we are in.
+ *
+ * This information is then used by this function to escape or encode
+ * special characters.
+ *
+ * @param {State} state
+ *   Info passed around about the current state.
+ * @param {string | null | undefined} input
+ *   Raw value to make safe.
+ * @param {SafeConfig} config
+ *   Configuration.
+ * @returns {string}
+ *   Serialized markdown safe for embedding.
+ */
+function safe(state, input, config) {
+  const value = (config.before || '') + (input || '') + (config.after || '')
+  /** @type {Array<number>} */
+  const positions = []
+  /** @type {Array<string>} */
+  const result = []
+  /** @type {Record<number, {before: boolean, after: boolean}>} */
+  const infos = {}
+  let index = -1
+
+  while (++index < state.unsafe.length) {
+    const pattern = state.unsafe[index]
+
+    if (!(0,pattern_in_scope/* patternInScope */.P)(state.stack, pattern)) {
+      continue
+    }
+
+    const expression = state.compilePattern(pattern)
+    /** @type {RegExpExecArray | null} */
+    let match
+
+    while ((match = expression.exec(value))) {
+      const before = 'before' in pattern || Boolean(pattern.atBreak)
+      const after = 'after' in pattern
+      const position = match.index + (before ? match[1].length : 0)
+
+      if (positions.includes(position)) {
+        if (infos[position].before && !before) {
+          infos[position].before = false
+        }
+
+        if (infos[position].after && !after) {
+          infos[position].after = false
+        }
+      } else {
+        positions.push(position)
+        infos[position] = {before, after}
+      }
+    }
+  }
+
+  positions.sort(numerical)
+
+  let start = config.before ? config.before.length : 0
+  const end = value.length - (config.after ? config.after.length : 0)
+  index = -1
+
+  while (++index < positions.length) {
+    const position = positions[index]
+
+    // Character before or after matched:
+    if (position < start || position >= end) {
+      continue
+    }
+
+    // If this character is supposed to be escaped because it has a condition on
+    // the next character, and the next character is definitly being escaped,
+    // then skip this escape.
+    if (
+      (position + 1 < end &&
+        positions[index + 1] === position + 1 &&
+        infos[position].after &&
+        !infos[position + 1].before &&
+        !infos[position + 1].after) ||
+      (positions[index - 1] === position - 1 &&
+        infos[position].before &&
+        !infos[position - 1].before &&
+        !infos[position - 1].after)
+    ) {
+      continue
+    }
+
+    if (start !== position) {
+      // If we have to use a character reference, an ampersand would be more
+      // correct, but as backslashes only care about punctuation, either will
+      // do the trick
+      result.push(escapeBackslashes(value.slice(start, position), '\\'))
+    }
+
+    start = position
+
+    if (
+      /[!-/:-@[-`{-~]/.test(value.charAt(position)) &&
+      (!config.encode || !config.encode.includes(value.charAt(position)))
+    ) {
+      // Character escape.
+      result.push('\\')
+    } else {
+      // Character reference.
+      result.push(
+        '&#x' + value.charCodeAt(position).toString(16).toUpperCase() + ';'
+      )
+      start++
+    }
+  }
+
+  result.push(escapeBackslashes(value.slice(start, end), config.after))
+
+  return result.join('')
+}
+
+/**
+ * @param {number} a
+ * @param {number} b
+ * @returns {number}
+ */
+function numerical(a, b) {
+  return a - b
+}
+
+/**
+ * @param {string} value
+ * @param {string} after
+ * @returns {string}
+ */
+function escapeBackslashes(value, after) {
+  const expression = /\\(?=[!-/:-@[-`{-~])/g
+  /** @type {Array<number>} */
+  const positions = []
+  /** @type {Array<string>} */
+  const results = []
+  const whole = value + after
+  let index = -1
+  let start = 0
+  /** @type {RegExpExecArray | null} */
+  let match
+
+  while ((match = expression.exec(whole))) {
+    positions.push(match.index)
+  }
+
+  while (++index < positions.length) {
+    if (start !== positions[index]) {
+      results.push(value.slice(start, positions[index]))
+    }
+
+    results.push('\\')
+    start = positions[index]
+  }
+
+  results.push(value.slice(start))
+
+  return results.join('')
+}
+
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/util/track.js
+/**
+ * @typedef {import('../types.js').CreateTracker} CreateTracker
+ * @typedef {import('../types.js').TrackCurrent} TrackCurrent
+ * @typedef {import('../types.js').TrackMove} TrackMove
+ * @typedef {import('../types.js').TrackShift} TrackShift
+ */
+
+/**
+ * Track positional info in the output.
+ *
+ * @type {CreateTracker}
+ */
+function track(config) {
+  // Defaults are used to prevent crashes when older utilities somehow activate
+  // this code.
+  /* c8 ignore next 5 */
+  const options = config || {}
+  const now = options.now || {}
+  let lineShift = options.lineShift || 0
+  let line = now.line || 1
+  let column = now.column || 1
+
+  return {move, current, shift}
+
+  /**
+   * Get the current tracked info.
+   *
+   * @type {TrackCurrent}
+   */
+  function current() {
+    return {now: {line, column}, lineShift}
+  }
+
+  /**
+   * Define an increased line shift (the typical indent for lines).
+   *
+   * @type {TrackShift}
+   */
+  function shift(value) {
+    lineShift += value
+  }
+
+  /**
+   * Move past some generated markdown.
+   *
+   * @type {TrackMove}
+   */
+  function move(input) {
+    // eslint-disable-next-line unicorn/prefer-default-parameters
+    const value = input || ''
+    const chunks = value.split(/\r?\n|\r/g)
+    const tail = chunks[chunks.length - 1]
+    line += chunks.length - 1
+    column =
+      chunks.length === 1 ? column + tail.length : 1 + tail.length + lineShift
+    return value
+  }
+}
+
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/index.js
+/**
+ * @typedef {import('mdast').Nodes} Nodes
+ * @typedef {import('./types.js').Enter} Enter
+ * @typedef {import('./types.js').Info} Info
+ * @typedef {import('./types.js').Join} Join
+ * @typedef {import('./types.js').FlowParents} FlowParents
+ * @typedef {import('./types.js').Options} Options
+ * @typedef {import('./types.js').PhrasingParents} PhrasingParents
+ * @typedef {import('./types.js').SafeConfig} SafeConfig
+ * @typedef {import('./types.js').State} State
+ * @typedef {import('./types.js').TrackFields} TrackFields
+ */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**
+ * Turn an mdast syntax tree into markdown.
+ *
+ * @param {Nodes} tree
+ *   Tree to serialize.
+ * @param {Options} [options]
+ *   Configuration (optional).
+ * @returns {string}
+ *   Serialized markdown representing `tree`.
+ */
+function toMarkdown(tree, options = {}) {
+  /** @type {State} */
+  const state = {
+    enter,
+    indentLines: indentLines,
+    associationId: association,
+    containerPhrasing: containerPhrasingBound,
+    containerFlow: containerFlowBound,
+    createTracker: track,
+    compilePattern: compilePattern,
+    safe: safeBound,
+    stack: [],
+    unsafe: [...unsafe],
+    join: [...join],
+    // @ts-expect-error: GFM / frontmatter are typed in `mdast` but not defined
+    // here.
+    handlers: {...handle/* handle */.p},
+    options: {},
+    indexStack: [],
+    // @ts-expect-error: add `handle` in a second.
+    handle: undefined
+  }
+
+  configure(state, options)
+
+  if (state.options.tightDefinitions) {
+    state.join.push(joinDefinition)
+  }
+
+  state.handle = zwitch('type', {
+    invalid,
+    unknown,
+    handlers: state.handlers
+  })
+
+  let result = state.handle(tree, undefined, state, {
+    before: '\n',
+    after: '\n',
+    now: {line: 1, column: 1},
+    lineShift: 0
+  })
+
+  if (
+    result &&
+    result.charCodeAt(result.length - 1) !== 10 &&
+    result.charCodeAt(result.length - 1) !== 13
+  ) {
+    result += '\n'
+  }
+
+  return result
+
+  /** @type {Enter} */
+  function enter(name) {
+    state.stack.push(name)
+    return exit
+
+    /**
+     * @returns {undefined}
+     */
+    function exit() {
+      state.stack.pop()
+    }
+  }
+}
+
+/**
+ * @param {unknown} value
+ * @returns {never}
+ */
+function invalid(value) {
+  throw new Error('Cannot handle value `' + value + '`, expected node')
+}
+
+/**
+ * @param {unknown} value
+ * @returns {never}
+ */
+function unknown(value) {
+  // Always a node.
+  const node = /** @type {Nodes} */ (value)
+  throw new Error('Cannot handle unknown node `' + node.type + '`')
+}
+
+/** @type {Join} */
+function joinDefinition(left, right) {
+  // No blank line between adjacent definitions.
+  if (left.type === 'definition' && left.type === right.type) {
+    return 0
+  }
+}
+
+/**
+ * Serialize the children of a parent that contains phrasing children.
+ *
+ * These children will be joined flush together.
+ *
+ * @this {State}
+ *   Info passed around about the current state.
+ * @param {PhrasingParents} parent
+ *   Parent of flow nodes.
+ * @param {Info} info
+ *   Info on where we are in the document we are generating.
+ * @returns {string}
+ *   Serialized children, joined together.
+ */
+function containerPhrasingBound(parent, info) {
+  return containerPhrasing(parent, this, info)
+}
+
+/**
+ * Serialize the children of a parent that contains flow children.
+ *
+ * These children will typically be joined by blank lines.
+ * What they are joined by exactly is defined by `Join` functions.
+ *
+ * @this {State}
+ *   Info passed around about the current state.
+ * @param {FlowParents} parent
+ *   Parent of flow nodes.
+ * @param {TrackFields} info
+ *   Info on where we are in the document we are generating.
+ * @returns {string}
+ *   Serialized children, joined by (blank) lines.
+ */
+function containerFlowBound(parent, info) {
+  return containerFlow(parent, this, info)
+}
+
+/**
+ * Make a string safe for embedding in markdown constructs.
+ *
+ * In markdown, almost all punctuation characters can, in certain cases,
+ * result in something.
+ * Whether they do is highly subjective to where they happen and in what
+ * they happen.
+ *
+ * To solve this, `mdast-util-to-markdown` tracks:
+ *
+ * * Characters before and after something;
+ * * What “constructs” we are in.
+ *
+ * This information is then used by this function to escape or encode
+ * special characters.
+ *
+ * @this {State}
+ *   Info passed around about the current state.
+ * @param {string | null | undefined} value
+ *   Raw value to make safe.
+ * @param {SafeConfig} config
+ *   Configuration.
+ * @returns {string}
+ *   Serialized markdown safe for embedding.
+ */
+function safeBound(value, config) {
+  return safe(this, value, config)
+}
+
+
+/***/ }),
+
+/***/ 750:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __nccwpck_require__) => {
+
+/* harmony export */ __nccwpck_require__.d(__webpack_exports__, {
+/* harmony export */   "A": () => (/* binding */ formatCodeAsIndented)
+/* harmony export */ });
+/**
+ * @typedef {import('mdast').Code} Code
+ * @typedef {import('../types.js').State} State
+ */
+
+/**
+ * @param {Code} node
+ * @param {State} state
+ * @returns {boolean}
+ */
+function formatCodeAsIndented(node, state) {
+  return Boolean(
+    state.options.fences === false &&
+      node.value &&
+      // If there’s no info…
+      !node.lang &&
+      // And there’s a non-whitespace character…
+      /[^ \r\n]/.test(node.value) &&
+      // And the value doesn’t start or end in a blank…
+      !/^[\t ]*(?:[\r\n]|$)|(?:^|[\r\n])[\t ]*$/.test(node.value)
+  )
+}
+
+
+/***/ }),
+
+/***/ 1935:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __nccwpck_require__) => {
+
+
+// EXPORTS
+__nccwpck_require__.d(__webpack_exports__, {
+  "T": () => (/* binding */ formatHeadingAsSetext)
+});
+
+// EXTERNAL MODULE: ./node_modules/unist-util-is/lib/index.js
+var lib = __nccwpck_require__(9607);
+;// CONCATENATED MODULE: ./node_modules/unist-util-visit-parents/lib/color.node.js
+/**
+ * @param {string} d
+ * @returns {string}
+ */
+function color(d) {
+  return '\u001B[33m' + d + '\u001B[39m'
+}
+
+;// CONCATENATED MODULE: ./node_modules/unist-util-visit-parents/lib/index.js
+/**
+ * @typedef {import('unist').Node} UnistNode
+ * @typedef {import('unist').Parent} UnistParent
+ */
+
+/**
+ * @typedef {Exclude<import('unist-util-is').Test, undefined> | undefined} Test
+ *   Test from `unist-util-is`.
+ *
+ *   Note: we have remove and add `undefined`, because otherwise when generating
+ *   automatic `.d.ts` files, TS tries to flatten paths from a local perspective,
+ *   which doesn’t work when publishing on npm.
+ */
+
+/**
+ * @typedef {(
+ *   Fn extends (value: any) => value is infer Thing
+ *   ? Thing
+ *   : Fallback
+ * )} Predicate
+ *   Get the value of a type guard `Fn`.
+ * @template Fn
+ *   Value; typically function that is a type guard (such as `(x): x is Y`).
+ * @template Fallback
+ *   Value to yield if `Fn` is not a type guard.
+ */
+
+/**
+ * @typedef {(
+ *   Check extends null | undefined // No test.
+ *   ? Value
+ *   : Value extends {type: Check} // String (type) test.
+ *   ? Value
+ *   : Value extends Check // Partial test.
+ *   ? Value
+ *   : Check extends Function // Function test.
+ *   ? Predicate<Check, Value> extends Value
+ *     ? Predicate<Check, Value>
+ *     : never
+ *   : never // Some other test?
+ * )} MatchesOne
+ *   Check whether a node matches a primitive check in the type system.
+ * @template Value
+ *   Value; typically unist `Node`.
+ * @template Check
+ *   Value; typically `unist-util-is`-compatible test, but not arrays.
+ */
+
+/**
+ * @typedef {(
+ *   Check extends Array<any>
+ *   ? MatchesOne<Value, Check[keyof Check]>
+ *   : MatchesOne<Value, Check>
+ * )} Matches
+ *   Check whether a node matches a check in the type system.
+ * @template Value
+ *   Value; typically unist `Node`.
+ * @template Check
+ *   Value; typically `unist-util-is`-compatible test.
+ */
+
+/**
+ * @typedef {0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10} Uint
+ *   Number; capped reasonably.
+ */
+
+/**
+ * @typedef {I extends 0 ? 1 : I extends 1 ? 2 : I extends 2 ? 3 : I extends 3 ? 4 : I extends 4 ? 5 : I extends 5 ? 6 : I extends 6 ? 7 : I extends 7 ? 8 : I extends 8 ? 9 : 10} Increment
+ *   Increment a number in the type system.
+ * @template {Uint} [I=0]
+ *   Index.
+ */
+
+/**
+ * @typedef {(
+ *   Node extends UnistParent
+ *   ? Node extends {children: Array<infer Children>}
+ *     ? Child extends Children ? Node : never
+ *     : never
+ *   : never
+ * )} InternalParent
+ *   Collect nodes that can be parents of `Child`.
+ * @template {UnistNode} Node
+ *   All node types in a tree.
+ * @template {UnistNode} Child
+ *   Node to search for.
+ */
+
+/**
+ * @typedef {InternalParent<InclusiveDescendant<Tree>, Child>} Parent
+ *   Collect nodes in `Tree` that can be parents of `Child`.
+ * @template {UnistNode} Tree
+ *   All node types in a tree.
+ * @template {UnistNode} Child
+ *   Node to search for.
+ */
+
+/**
+ * @typedef {(
+ *   Depth extends Max
+ *   ? never
+ *   :
+ *     | InternalParent<Node, Child>
+ *     | InternalAncestor<Node, InternalParent<Node, Child>, Max, Increment<Depth>>
+ * )} InternalAncestor
+ *   Collect nodes in `Tree` that can be ancestors of `Child`.
+ * @template {UnistNode} Node
+ *   All node types in a tree.
+ * @template {UnistNode} Child
+ *   Node to search for.
+ * @template {Uint} [Max=10]
+ *   Max; searches up to this depth.
+ * @template {Uint} [Depth=0]
+ *   Current depth.
+ */
+
+/**
+ * @typedef {InternalAncestor<InclusiveDescendant<Tree>, Child>} Ancestor
+ *   Collect nodes in `Tree` that can be ancestors of `Child`.
+ * @template {UnistNode} Tree
+ *   All node types in a tree.
+ * @template {UnistNode} Child
+ *   Node to search for.
+ */
+
+/**
+ * @typedef {(
+ *   Tree extends UnistParent
+ *     ? Depth extends Max
+ *       ? Tree
+ *       : Tree | InclusiveDescendant<Tree['children'][number], Max, Increment<Depth>>
+ *     : Tree
+ * )} InclusiveDescendant
+ *   Collect all (inclusive) descendants of `Tree`.
+ *
+ *   > 👉 **Note**: for performance reasons, this seems to be the fastest way to
+ *   > recurse without actually running into an infinite loop, which the
+ *   > previous version did.
+ *   >
+ *   > Practically, a max of `2` is typically enough assuming a `Root` is
+ *   > passed, but it doesn’t improve performance.
+ *   > It gets higher with `List > ListItem > Table > TableRow > TableCell`.
+ *   > Using up to `10` doesn’t hurt or help either.
+ * @template {UnistNode} Tree
+ *   Tree type.
+ * @template {Uint} [Max=10]
+ *   Max; searches up to this depth.
+ * @template {Uint} [Depth=0]
+ *   Current depth.
+ */
+
+/**
+ * @typedef {'skip' | boolean} Action
+ *   Union of the action types.
+ *
+ * @typedef {number} Index
+ *   Move to the sibling at `index` next (after node itself is completely
+ *   traversed).
+ *
+ *   Useful if mutating the tree, such as removing the node the visitor is
+ *   currently on, or any of its previous siblings.
+ *   Results less than 0 or greater than or equal to `children.length` stop
+ *   traversing the parent.
+ *
+ * @typedef {[(Action | null | undefined | void)?, (Index | null | undefined)?]} ActionTuple
+ *   List with one or two values, the first an action, the second an index.
+ *
+ * @typedef {Action | ActionTuple | Index | null | undefined | void} VisitorResult
+ *   Any value that can be returned from a visitor.
+ */
+
+/**
+ * @callback Visitor
+ *   Handle a node (matching `test`, if given).
+ *
+ *   Visitors are free to transform `node`.
+ *   They can also transform the parent of node (the last of `ancestors`).
+ *
+ *   Replacing `node` itself, if `SKIP` is not returned, still causes its
+ *   descendants to be walked (which is a bug).
+ *
+ *   When adding or removing previous siblings of `node` (or next siblings, in
+ *   case of reverse), the `Visitor` should return a new `Index` to specify the
+ *   sibling to traverse after `node` is traversed.
+ *   Adding or removing next siblings of `node` (or previous siblings, in case
+ *   of reverse) is handled as expected without needing to return a new `Index`.
+ *
+ *   Removing the children property of an ancestor still results in them being
+ *   traversed.
+ * @param {Visited} node
+ *   Found node.
+ * @param {Array<VisitedParents>} ancestors
+ *   Ancestors of `node`.
+ * @returns {VisitorResult}
+ *   What to do next.
+ *
+ *   An `Index` is treated as a tuple of `[CONTINUE, Index]`.
+ *   An `Action` is treated as a tuple of `[Action]`.
+ *
+ *   Passing a tuple back only makes sense if the `Action` is `SKIP`.
+ *   When the `Action` is `EXIT`, that action can be returned.
+ *   When the `Action` is `CONTINUE`, `Index` can be returned.
+ * @template {UnistNode} [Visited=UnistNode]
+ *   Visited node type.
+ * @template {UnistParent} [VisitedParents=UnistParent]
+ *   Ancestor type.
+ */
+
+/**
+ * @typedef {Visitor<Matches<InclusiveDescendant<Tree>, Check>, Ancestor<Tree, Matches<InclusiveDescendant<Tree>, Check>>>} BuildVisitor
+ *   Build a typed `Visitor` function from a tree and a test.
+ *
+ *   It will infer which values are passed as `node` and which as `parents`.
+ * @template {UnistNode} [Tree=UnistNode]
+ *   Tree type.
+ * @template {Test} [Check=Test]
+ *   Test type.
+ */
+
+
+
+
+/** @type {Readonly<ActionTuple>} */
+const empty = []
+
+/**
+ * Continue traversing as normal.
+ */
+const CONTINUE = true
+
+/**
+ * Stop traversing immediately.
+ */
+const EXIT = false
+
+/**
+ * Do not traverse this node’s children.
+ */
+const SKIP = 'skip'
+
+/**
+ * Visit nodes, with ancestral information.
+ *
+ * This algorithm performs *depth-first* *tree traversal* in *preorder*
+ * (**NLR**) or if `reverse` is given, in *reverse preorder* (**NRL**).
+ *
+ * You can choose for which nodes `visitor` is called by passing a `test`.
+ * For complex tests, you should test yourself in `visitor`, as it will be
+ * faster and will have improved type information.
+ *
+ * Walking the tree is an intensive task.
+ * Make use of the return values of the visitor when possible.
+ * Instead of walking a tree multiple times, walk it once, use `unist-util-is`
+ * to check if a node matches, and then perform different operations.
+ *
+ * You can change the tree.
+ * See `Visitor` for more info.
+ *
+ * @overload
+ * @param {Tree} tree
+ * @param {Check} check
+ * @param {BuildVisitor<Tree, Check>} visitor
+ * @param {boolean | null | undefined} [reverse]
+ * @returns {undefined}
+ *
+ * @overload
+ * @param {Tree} tree
+ * @param {BuildVisitor<Tree>} visitor
+ * @param {boolean | null | undefined} [reverse]
+ * @returns {undefined}
+ *
+ * @param {UnistNode} tree
+ *   Tree to traverse.
+ * @param {Visitor | Test} test
+ *   `unist-util-is`-compatible test
+ * @param {Visitor | boolean | null | undefined} [visitor]
+ *   Handle each node.
+ * @param {boolean | null | undefined} [reverse]
+ *   Traverse in reverse preorder (NRL) instead of the default preorder (NLR).
+ * @returns {undefined}
+ *   Nothing.
+ *
+ * @template {UnistNode} Tree
+ *   Node type.
+ * @template {Test} Check
+ *   `unist-util-is`-compatible test.
+ */
+function visitParents(tree, test, visitor, reverse) {
+  /** @type {Test} */
+  let check
+
+  if (typeof test === 'function' && typeof visitor !== 'function') {
+    reverse = visitor
+    // @ts-expect-error no visitor given, so `visitor` is test.
+    visitor = test
+  } else {
+    // @ts-expect-error visitor given, so `test` isn’t a visitor.
+    check = test
+  }
+
+  const is = (0,lib/* convert */.O)(check)
+  const step = reverse ? -1 : 1
+
+  factory(tree, undefined, [])()
+
+  /**
+   * @param {UnistNode} node
+   * @param {number | undefined} index
+   * @param {Array<UnistParent>} parents
+   */
+  function factory(node, index, parents) {
+    const value = /** @type {Record<string, unknown>} */ (
+      node && typeof node === 'object' ? node : {}
+    )
+
+    if (typeof value.type === 'string') {
+      const name =
+        // `hast`
+        typeof value.tagName === 'string'
+          ? value.tagName
+          : // `xast`
+          typeof value.name === 'string'
+          ? value.name
+          : undefined
+
+      Object.defineProperty(visit, 'name', {
+        value:
+          'node (' + color(node.type + (name ? '<' + name + '>' : '')) + ')'
+      })
+    }
+
+    return visit
+
+    function visit() {
+      /** @type {Readonly<ActionTuple>} */
+      let result = empty
+      /** @type {Readonly<ActionTuple>} */
+      let subresult
+      /** @type {number} */
+      let offset
+      /** @type {Array<UnistParent>} */
+      let grandparents
+
+      if (!test || is(node, index, parents[parents.length - 1] || undefined)) {
+        // @ts-expect-error: `visitor` is now a visitor.
+        result = toResult(visitor(node, parents))
+
+        if (result[0] === EXIT) {
+          return result
+        }
+      }
+
+      if ('children' in node && node.children) {
+        const nodeAsParent = /** @type {UnistParent} */ (node)
+
+        if (nodeAsParent.children && result[0] !== SKIP) {
+          offset = (reverse ? nodeAsParent.children.length : -1) + step
+          grandparents = parents.concat(nodeAsParent)
+
+          while (offset > -1 && offset < nodeAsParent.children.length) {
+            const child = nodeAsParent.children[offset]
+
+            subresult = factory(child, offset, grandparents)()
+
+            if (subresult[0] === EXIT) {
+              return subresult
+            }
+
+            offset =
+              typeof subresult[1] === 'number' ? subresult[1] : offset + step
+          }
+        }
+      }
+
+      return result
+    }
+  }
+}
+
+/**
+ * Turn a return value into a clean result.
+ *
+ * @param {VisitorResult} value
+ *   Valid return values from visitors.
+ * @returns {Readonly<ActionTuple>}
+ *   Clean result.
+ */
+function toResult(value) {
+  if (Array.isArray(value)) {
+    return value
+  }
+
+  if (typeof value === 'number') {
+    return [CONTINUE, value]
+  }
+
+  return value === null || value === undefined ? empty : [value]
+}
+
+;// CONCATENATED MODULE: ./node_modules/unist-util-visit/lib/index.js
+/**
+ * @typedef {import('unist').Node} UnistNode
+ * @typedef {import('unist').Parent} UnistParent
+ * @typedef {import('unist-util-visit-parents').VisitorResult} VisitorResult
+ */
+
+/**
+ * @typedef {Exclude<import('unist-util-is').Test, undefined> | undefined} Test
+ *   Test from `unist-util-is`.
+ *
+ *   Note: we have remove and add `undefined`, because otherwise when generating
+ *   automatic `.d.ts` files, TS tries to flatten paths from a local perspective,
+ *   which doesn’t work when publishing on npm.
+ */
+
+// To do: use types from `unist-util-visit-parents` when it’s released.
+
+/**
+ * @typedef {(
+ *   Fn extends (value: any) => value is infer Thing
+ *   ? Thing
+ *   : Fallback
+ * )} Predicate
+ *   Get the value of a type guard `Fn`.
+ * @template Fn
+ *   Value; typically function that is a type guard (such as `(x): x is Y`).
+ * @template Fallback
+ *   Value to yield if `Fn` is not a type guard.
+ */
+
+/**
+ * @typedef {(
+ *   Check extends null | undefined // No test.
+ *   ? Value
+ *   : Value extends {type: Check} // String (type) test.
+ *   ? Value
+ *   : Value extends Check // Partial test.
+ *   ? Value
+ *   : Check extends Function // Function test.
+ *   ? Predicate<Check, Value> extends Value
+ *     ? Predicate<Check, Value>
+ *     : never
+ *   : never // Some other test?
+ * )} MatchesOne
+ *   Check whether a node matches a primitive check in the type system.
+ * @template Value
+ *   Value; typically unist `Node`.
+ * @template Check
+ *   Value; typically `unist-util-is`-compatible test, but not arrays.
+ */
+
+/**
+ * @typedef {(
+ *   Check extends Array<any>
+ *   ? MatchesOne<Value, Check[keyof Check]>
+ *   : MatchesOne<Value, Check>
+ * )} Matches
+ *   Check whether a node matches a check in the type system.
+ * @template Value
+ *   Value; typically unist `Node`.
+ * @template Check
+ *   Value; typically `unist-util-is`-compatible test.
+ */
+
+/**
+ * @typedef {0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10} Uint
+ *   Number; capped reasonably.
+ */
+
+/**
+ * @typedef {I extends 0 ? 1 : I extends 1 ? 2 : I extends 2 ? 3 : I extends 3 ? 4 : I extends 4 ? 5 : I extends 5 ? 6 : I extends 6 ? 7 : I extends 7 ? 8 : I extends 8 ? 9 : 10} Increment
+ *   Increment a number in the type system.
+ * @template {Uint} [I=0]
+ *   Index.
+ */
+
+/**
+ * @typedef {(
+ *   Node extends UnistParent
+ *   ? Node extends {children: Array<infer Children>}
+ *     ? Child extends Children ? Node : never
+ *     : never
+ *   : never
+ * )} InternalParent
+ *   Collect nodes that can be parents of `Child`.
+ * @template {UnistNode} Node
+ *   All node types in a tree.
+ * @template {UnistNode} Child
+ *   Node to search for.
+ */
+
+/**
+ * @typedef {InternalParent<InclusiveDescendant<Tree>, Child>} Parent
+ *   Collect nodes in `Tree` that can be parents of `Child`.
+ * @template {UnistNode} Tree
+ *   All node types in a tree.
+ * @template {UnistNode} Child
+ *   Node to search for.
+ */
+
+/**
+ * @typedef {(
+ *   Depth extends Max
+ *   ? never
+ *   :
+ *     | InternalParent<Node, Child>
+ *     | InternalAncestor<Node, InternalParent<Node, Child>, Max, Increment<Depth>>
+ * )} InternalAncestor
+ *   Collect nodes in `Tree` that can be ancestors of `Child`.
+ * @template {UnistNode} Node
+ *   All node types in a tree.
+ * @template {UnistNode} Child
+ *   Node to search for.
+ * @template {Uint} [Max=10]
+ *   Max; searches up to this depth.
+ * @template {Uint} [Depth=0]
+ *   Current depth.
+ */
+
+/**
+ * @typedef {(
+ *   Tree extends UnistParent
+ *     ? Depth extends Max
+ *       ? Tree
+ *       : Tree | InclusiveDescendant<Tree['children'][number], Max, Increment<Depth>>
+ *     : Tree
+ * )} InclusiveDescendant
+ *   Collect all (inclusive) descendants of `Tree`.
+ *
+ *   > 👉 **Note**: for performance reasons, this seems to be the fastest way to
+ *   > recurse without actually running into an infinite loop, which the
+ *   > previous version did.
+ *   >
+ *   > Practically, a max of `2` is typically enough assuming a `Root` is
+ *   > passed, but it doesn’t improve performance.
+ *   > It gets higher with `List > ListItem > Table > TableRow > TableCell`.
+ *   > Using up to `10` doesn’t hurt or help either.
+ * @template {UnistNode} Tree
+ *   Tree type.
+ * @template {Uint} [Max=10]
+ *   Max; searches up to this depth.
+ * @template {Uint} [Depth=0]
+ *   Current depth.
+ */
+
+/**
+ * @callback Visitor
+ *   Handle a node (matching `test`, if given).
+ *
+ *   Visitors are free to transform `node`.
+ *   They can also transform `parent`.
+ *
+ *   Replacing `node` itself, if `SKIP` is not returned, still causes its
+ *   descendants to be walked (which is a bug).
+ *
+ *   When adding or removing previous siblings of `node` (or next siblings, in
+ *   case of reverse), the `Visitor` should return a new `Index` to specify the
+ *   sibling to traverse after `node` is traversed.
+ *   Adding or removing next siblings of `node` (or previous siblings, in case
+ *   of reverse) is handled as expected without needing to return a new `Index`.
+ *
+ *   Removing the children property of `parent` still results in them being
+ *   traversed.
+ * @param {Visited} node
+ *   Found node.
+ * @param {Visited extends UnistNode ? number | undefined : never} index
+ *   Index of `node` in `parent`.
+ * @param {Ancestor extends UnistParent ? Ancestor | undefined : never} parent
+ *   Parent of `node`.
+ * @returns {VisitorResult}
+ *   What to do next.
+ *
+ *   An `Index` is treated as a tuple of `[CONTINUE, Index]`.
+ *   An `Action` is treated as a tuple of `[Action]`.
+ *
+ *   Passing a tuple back only makes sense if the `Action` is `SKIP`.
+ *   When the `Action` is `EXIT`, that action can be returned.
+ *   When the `Action` is `CONTINUE`, `Index` can be returned.
+ * @template {UnistNode} [Visited=UnistNode]
+ *   Visited node type.
+ * @template {UnistParent} [Ancestor=UnistParent]
+ *   Ancestor type.
+ */
+
+/**
+ * @typedef {Visitor<Visited, Parent<Ancestor, Visited>>} BuildVisitorFromMatch
+ *   Build a typed `Visitor` function from a node and all possible parents.
+ *
+ *   It will infer which values are passed as `node` and which as `parent`.
+ * @template {UnistNode} Visited
+ *   Node type.
+ * @template {UnistParent} Ancestor
+ *   Parent type.
+ */
+
+/**
+ * @typedef {(
+ *   BuildVisitorFromMatch<
+ *     Matches<Descendant, Check>,
+ *     Extract<Descendant, UnistParent>
+ *   >
+ * )} BuildVisitorFromDescendants
+ *   Build a typed `Visitor` function from a list of descendants and a test.
+ *
+ *   It will infer which values are passed as `node` and which as `parent`.
+ * @template {UnistNode} Descendant
+ *   Node type.
+ * @template {Test} Check
+ *   Test type.
+ */
+
+/**
+ * @typedef {(
+ *   BuildVisitorFromDescendants<
+ *     InclusiveDescendant<Tree>,
+ *     Check
+ *   >
+ * )} BuildVisitor
+ *   Build a typed `Visitor` function from a tree and a test.
+ *
+ *   It will infer which values are passed as `node` and which as `parent`.
+ * @template {UnistNode} [Tree=UnistNode]
+ *   Node type.
+ * @template {Test} [Check=Test]
+ *   Test type.
+ */
+
+
+
+
+
+/**
+ * Visit nodes.
+ *
+ * This algorithm performs *depth-first* *tree traversal* in *preorder*
+ * (**NLR**) or if `reverse` is given, in *reverse preorder* (**NRL**).
+ *
+ * You can choose for which nodes `visitor` is called by passing a `test`.
+ * For complex tests, you should test yourself in `visitor`, as it will be
+ * faster and will have improved type information.
+ *
+ * Walking the tree is an intensive task.
+ * Make use of the return values of the visitor when possible.
+ * Instead of walking a tree multiple times, walk it once, use `unist-util-is`
+ * to check if a node matches, and then perform different operations.
+ *
+ * You can change the tree.
+ * See `Visitor` for more info.
+ *
+ * @overload
+ * @param {Tree} tree
+ * @param {Check} check
+ * @param {BuildVisitor<Tree, Check>} visitor
+ * @param {boolean | null | undefined} [reverse]
+ * @returns {undefined}
+ *
+ * @overload
+ * @param {Tree} tree
+ * @param {BuildVisitor<Tree>} visitor
+ * @param {boolean | null | undefined} [reverse]
+ * @returns {undefined}
+ *
+ * @param {UnistNode} tree
+ *   Tree to traverse.
+ * @param {Visitor | Test} testOrVisitor
+ *   `unist-util-is`-compatible test (optional, omit to pass a visitor).
+ * @param {Visitor | boolean | null | undefined} [visitorOrReverse]
+ *   Handle each node (when test is omitted, pass `reverse`).
+ * @param {boolean | null | undefined} [maybeReverse=false]
+ *   Traverse in reverse preorder (NRL) instead of the default preorder (NLR).
+ * @returns {undefined}
+ *   Nothing.
+ *
+ * @template {UnistNode} Tree
+ *   Node type.
+ * @template {Test} Check
+ *   `unist-util-is`-compatible test.
+ */
+function visit(tree, testOrVisitor, visitorOrReverse, maybeReverse) {
+  /** @type {boolean | null | undefined} */
+  let reverse
+  /** @type {Test} */
+  let test
+  /** @type {Visitor} */
+  let visitor
+
+  if (
+    typeof testOrVisitor === 'function' &&
+    typeof visitorOrReverse !== 'function'
+  ) {
+    test = undefined
+    visitor = testOrVisitor
+    reverse = visitorOrReverse
+  } else {
+    // @ts-expect-error: assume the overload with test was given.
+    test = testOrVisitor
+    // @ts-expect-error: assume the overload with test was given.
+    visitor = visitorOrReverse
+    reverse = maybeReverse
+  }
+
+  visitParents(tree, test, overload, reverse)
+
+  /**
+   * @param {UnistNode} node
+   * @param {Array<UnistParent>} parents
+   */
+  function overload(node, parents) {
+    const parent = parents[parents.length - 1]
+    const index = parent ? parent.children.indexOf(node) : undefined
+    return visitor(node, index, parent)
+  }
+}
+
+// EXTERNAL MODULE: ./node_modules/mdast-util-to-string/lib/index.js
+var mdast_util_to_string_lib = __nccwpck_require__(4216);
+;// CONCATENATED MODULE: ./node_modules/mdast-util-to-markdown/lib/util/format-heading-as-setext.js
+/**
+ * @typedef {import('mdast').Heading} Heading
+ * @typedef {import('../types.js').State} State
+ */
+
+
+
+
+/**
+ * @param {Heading} node
+ * @param {State} state
+ * @returns {boolean}
+ */
+function formatHeadingAsSetext(node, state) {
+  let literalWithBreak = false
+
+  // Look for literals with a line break.
+  // Note that this also
+  visit(node, function (node) {
+    if (
+      ('value' in node && /\r?\n|\r/.test(node.value)) ||
+      node.type === 'break'
+    ) {
+      literalWithBreak = true
+      return EXIT
+    }
+  })
+
+  return Boolean(
+    (!node.depth || node.depth < 3) &&
+      (0,mdast_util_to_string_lib/* toString */.B)(node) &&
+      (state.options.setext || literalWithBreak)
+  )
+}
+
+
+/***/ }),
+
+/***/ 5386:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __nccwpck_require__) => {
+
+/* harmony export */ __nccwpck_require__.d(__webpack_exports__, {
+/* harmony export */   "P": () => (/* binding */ patternInScope)
+/* harmony export */ });
+/**
+ * @typedef {import('../types.js').ConstructName} ConstructName
+ * @typedef {import('../types.js').Unsafe} Unsafe
+ */
+
+/**
+ * @param {Array<ConstructName>} stack
+ * @param {Unsafe} pattern
+ * @returns {boolean}
+ */
+function patternInScope(stack, pattern) {
+  return (
+    listInScope(stack, pattern.inConstruct, true) &&
+    !listInScope(stack, pattern.notInConstruct, false)
+  )
+}
+
+/**
+ * @param {Array<ConstructName>} stack
+ * @param {Unsafe['inConstruct']} list
+ * @param {boolean} none
+ * @returns {boolean}
+ */
+function listInScope(stack, list, none) {
+  if (typeof list === 'string') {
+    list = [list]
+  }
+
+  if (!list || list.length === 0) {
+    return none
+  }
+
+  let index = -1
+
+  while (++index < list.length) {
+    if (stack.includes(list[index])) {
+      return true
+    }
+  }
+
+  return false
+}
+
+
+/***/ }),
+
+/***/ 4216:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __nccwpck_require__) => {
+
+/* harmony export */ __nccwpck_require__.d(__webpack_exports__, {
+/* harmony export */   "B": () => (/* binding */ toString)
+/* harmony export */ });
+/**
+ * @typedef {import('mdast').Nodes} Nodes
+ *
+ * @typedef Options
+ *   Configuration (optional).
+ * @property {boolean | null | undefined} [includeImageAlt=true]
+ *   Whether to use `alt` for `image`s (default: `true`).
+ * @property {boolean | null | undefined} [includeHtml=true]
+ *   Whether to use `value` of HTML (default: `true`).
+ */
+
+/** @type {Options} */
+const emptyOptions = {}
+
+/**
+ * Get the text content of a node or list of nodes.
+ *
+ * Prefers the node’s plain-text fields, otherwise serializes its children,
+ * and if the given value is an array, serialize the nodes in it.
+ *
+ * @param {unknown} [value]
+ *   Thing to serialize, typically `Node`.
+ * @param {Options | null | undefined} [options]
+ *   Configuration (optional).
+ * @returns {string}
+ *   Serialized `value`.
+ */
+function toString(value, options) {
+  const settings = options || emptyOptions
+  const includeImageAlt =
+    typeof settings.includeImageAlt === 'boolean'
+      ? settings.includeImageAlt
+      : true
+  const includeHtml =
+    typeof settings.includeHtml === 'boolean' ? settings.includeHtml : true
+
+  return one(value, includeImageAlt, includeHtml)
+}
+
+/**
+ * One node or several nodes.
+ *
+ * @param {unknown} value
+ *   Thing to serialize.
+ * @param {boolean} includeImageAlt
+ *   Include image `alt`s.
+ * @param {boolean} includeHtml
+ *   Include HTML.
+ * @returns {string}
+ *   Serialized node.
+ */
+function one(value, includeImageAlt, includeHtml) {
+  if (node(value)) {
+    if ('value' in value) {
+      return value.type === 'html' && !includeHtml ? '' : value.value
+    }
+
+    if (includeImageAlt && 'alt' in value && value.alt) {
+      return value.alt
+    }
+
+    if ('children' in value) {
+      return all(value.children, includeImageAlt, includeHtml)
+    }
+  }
+
+  if (Array.isArray(value)) {
+    return all(value, includeImageAlt, includeHtml)
+  }
+
+  return ''
+}
+
+/**
+ * Serialize a list of nodes.
+ *
+ * @param {Array<unknown>} values
+ *   Thing to serialize.
+ * @param {boolean} includeImageAlt
+ *   Include image `alt`s.
+ * @param {boolean} includeHtml
+ *   Include HTML.
+ * @returns {string}
+ *   Serialized nodes.
+ */
+function all(values, includeImageAlt, includeHtml) {
+  /** @type {Array<string>} */
+  const result = []
+  let index = -1
+
+  while (++index < values.length) {
+    result[index] = one(values[index], includeImageAlt, includeHtml)
+  }
+
+  return result.join('')
+}
+
+/**
+ * Check if `value` looks like a node.
+ *
+ * @param {unknown} value
+ *   Thing.
+ * @returns {value is Nodes}
+ *   Whether `value` is a node.
+ */
+function node(value) {
+  return Boolean(value && typeof value === 'object')
+}
+
+
+/***/ }),
+
+/***/ 9607:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __nccwpck_require__) => {
+
+/* harmony export */ __nccwpck_require__.d(__webpack_exports__, {
+/* harmony export */   "O": () => (/* binding */ convert)
+/* harmony export */ });
+/* unused harmony export is */
+/**
+ * @typedef {import('unist').Node} Node
+ * @typedef {import('unist').Parent} Parent
+ */
+
+/**
+ * @template Fn
+ * @template Fallback
+ * @typedef {Fn extends (value: any) => value is infer Thing ? Thing : Fallback} Predicate
+ */
+
+/**
+ * @callback Check
+ *   Check that an arbitrary value is a node.
+ * @param {unknown} this
+ *   The given context.
+ * @param {unknown} [node]
+ *   Anything (typically a node).
+ * @param {number | null | undefined} [index]
+ *   The node’s position in its parent.
+ * @param {Parent | null | undefined} [parent]
+ *   The node’s parent.
+ * @returns {boolean}
+ *   Whether this is a node and passes a test.
+ *
+ * @typedef {Record<string, unknown> | Node} Props
+ *   Object to check for equivalence.
+ *
+ *   Note: `Node` is included as it is common but is not indexable.
+ *
+ * @typedef {Array<Props | TestFunction | string> | Props | TestFunction | string | null | undefined} Test
+ *   Check for an arbitrary node.
+ *
+ * @callback TestFunction
+ *   Check if a node passes a test.
+ * @param {unknown} this
+ *   The given context.
+ * @param {Node} node
+ *   A node.
+ * @param {number | undefined} [index]
+ *   The node’s position in its parent.
+ * @param {Parent | undefined} [parent]
+ *   The node’s parent.
+ * @returns {boolean | undefined | void}
+ *   Whether this node passes the test.
+ *
+ *   Note: `void` is included until TS sees no return as `undefined`.
+ */
+
+/**
+ * Check if `node` is a `Node` and whether it passes the given test.
+ *
+ * @param {unknown} node
+ *   Thing to check, typically `Node`.
+ * @param {Test} test
+ *   A check for a specific node.
+ * @param {number | null | undefined} index
+ *   The node’s position in its parent.
+ * @param {Parent | null | undefined} parent
+ *   The node’s parent.
+ * @param {unknown} context
+ *   Context object (`this`) to pass to `test` functions.
+ * @returns {boolean}
+ *   Whether `node` is a node and passes a test.
+ */
+const is =
+  // Note: overloads in JSDoc can’t yet use different `@template`s.
+  /**
+   * @type {(
+   *   (<Condition extends string>(node: unknown, test: Condition, index?: number | null | undefined, parent?: Parent | null | undefined, context?: unknown) => node is Node & {type: Condition}) &
+   *   (<Condition extends Props>(node: unknown, test: Condition, index?: number | null | undefined, parent?: Parent | null | undefined, context?: unknown) => node is Node & Condition) &
+   *   (<Condition extends TestFunction>(node: unknown, test: Condition, index?: number | null | undefined, parent?: Parent | null | undefined, context?: unknown) => node is Node & Predicate<Condition, Node>) &
+   *   ((node?: null | undefined) => false) &
+   *   ((node: unknown, test?: null | undefined, index?: number | null | undefined, parent?: Parent | null | undefined, context?: unknown) => node is Node) &
+   *   ((node: unknown, test?: Test, index?: number | null | undefined, parent?: Parent | null | undefined, context?: unknown) => boolean)
+   * )}
+   */
+  (
+    /**
+     * @param {unknown} [node]
+     * @param {Test} [test]
+     * @param {number | null | undefined} [index]
+     * @param {Parent | null | undefined} [parent]
+     * @param {unknown} [context]
+     * @returns {boolean}
+     */
+    // eslint-disable-next-line max-params
+    function (node, test, index, parent, context) {
+      const check = convert(test)
+
+      if (
+        index !== undefined &&
+        index !== null &&
+        (typeof index !== 'number' ||
+          index < 0 ||
+          index === Number.POSITIVE_INFINITY)
+      ) {
+        throw new Error('Expected positive finite index')
+      }
+
+      if (
+        parent !== undefined &&
+        parent !== null &&
+        (!is(parent) || !parent.children)
+      ) {
+        throw new Error('Expected parent node')
+      }
+
+      if (
+        (parent === undefined || parent === null) !==
+        (index === undefined || index === null)
+      ) {
+        throw new Error('Expected both parent and index')
+      }
+
+      return looksLikeANode(node)
+        ? check.call(context, node, index, parent)
+        : false
+    }
+  )
+
+/**
+ * Generate an assertion from a test.
+ *
+ * Useful if you’re going to test many nodes, for example when creating a
+ * utility where something else passes a compatible test.
+ *
+ * The created function is a bit faster because it expects valid input only:
+ * a `node`, `index`, and `parent`.
+ *
+ * @param {Test} test
+ *   *   when nullish, checks if `node` is a `Node`.
+ *   *   when `string`, works like passing `(node) => node.type === test`.
+ *   *   when `function` checks if function passed the node is true.
+ *   *   when `object`, checks that all keys in test are in node, and that they have (strictly) equal values.
+ *   *   when `array`, checks if any one of the subtests pass.
+ * @returns {Check}
+ *   An assertion.
+ */
+const convert =
+  // Note: overloads in JSDoc can’t yet use different `@template`s.
+  /**
+   * @type {(
+   *   (<Condition extends string>(test: Condition) => (node: unknown, index?: number | null | undefined, parent?: Parent | null | undefined, context?: unknown) => node is Node & {type: Condition}) &
+   *   (<Condition extends Props>(test: Condition) => (node: unknown, index?: number | null | undefined, parent?: Parent | null | undefined, context?: unknown) => node is Node & Condition) &
+   *   (<Condition extends TestFunction>(test: Condition) => (node: unknown, index?: number | null | undefined, parent?: Parent | null | undefined, context?: unknown) => node is Node & Predicate<Condition, Node>) &
+   *   ((test?: null | undefined) => (node?: unknown, index?: number | null | undefined, parent?: Parent | null | undefined, context?: unknown) => node is Node) &
+   *   ((test?: Test) => Check)
+   * )}
+   */
+  (
+    /**
+     * @param {Test} [test]
+     * @returns {Check}
+     */
+    function (test) {
+      if (test === null || test === undefined) {
+        return ok
+      }
+
+      if (typeof test === 'function') {
+        return castFactory(test)
+      }
+
+      if (typeof test === 'object') {
+        return Array.isArray(test) ? anyFactory(test) : propsFactory(test)
+      }
+
+      if (typeof test === 'string') {
+        return typeFactory(test)
+      }
+
+      throw new Error('Expected function, string, or object as test')
+    }
+  )
+
+/**
+ * @param {Array<Props | TestFunction | string>} tests
+ * @returns {Check}
+ */
+function anyFactory(tests) {
+  /** @type {Array<Check>} */
+  const checks = []
+  let index = -1
+
+  while (++index < tests.length) {
+    checks[index] = convert(tests[index])
+  }
+
+  return castFactory(any)
+
+  /**
+   * @this {unknown}
+   * @type {TestFunction}
+   */
+  function any(...parameters) {
+    let index = -1
+
+    while (++index < checks.length) {
+      if (checks[index].apply(this, parameters)) return true
+    }
+
+    return false
+  }
+}
+
+/**
+ * Turn an object into a test for a node with a certain fields.
+ *
+ * @param {Props} check
+ * @returns {Check}
+ */
+function propsFactory(check) {
+  const checkAsRecord = /** @type {Record<string, unknown>} */ (check)
+
+  return castFactory(all)
+
+  /**
+   * @param {Node} node
+   * @returns {boolean}
+   */
+  function all(node) {
+    const nodeAsRecord = /** @type {Record<string, unknown>} */ (
+      /** @type {unknown} */ (node)
+    )
+
+    /** @type {string} */
+    let key
+
+    for (key in check) {
+      if (nodeAsRecord[key] !== checkAsRecord[key]) return false
+    }
+
+    return true
+  }
+}
+
+/**
+ * Turn a string into a test for a node with a certain type.
+ *
+ * @param {string} check
+ * @returns {Check}
+ */
+function typeFactory(check) {
+  return castFactory(type)
+
+  /**
+   * @param {Node} node
+   */
+  function type(node) {
+    return node && node.type === check
+  }
+}
+
+/**
+ * Turn a custom test into a test for a node that passes that test.
+ *
+ * @param {TestFunction} testFunction
+ * @returns {Check}
+ */
+function castFactory(testFunction) {
+  return check
+
+  /**
+   * @this {unknown}
+   * @type {Check}
+   */
+  function check(value, index, parent) {
+    return Boolean(
+      looksLikeANode(value) &&
+        testFunction.call(
+          this,
+          value,
+          typeof index === 'number' ? index : undefined,
+          parent || undefined
+        )
+    )
+  }
+}
+
+function ok() {
+  return true
+}
+
+/**
+ * @param {unknown} value
+ * @returns {value is Node}
+ */
+function looksLikeANode(value) {
+  return value !== null && typeof value === 'object' && 'type' in value
+}
 
 
 /***/ })
