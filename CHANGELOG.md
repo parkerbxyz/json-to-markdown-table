@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/parkerbxyz/json-to-markdown-table/compare/v1.1.0...v1.1.1) (2024-04-07)
+
+
+### Bug Fixes
+
+* **deps:** bump undici from 5.28.3 to 5.28.4 ([#5](https://github.com/parkerbxyz/json-to-markdown-table/issues/5)) ([4aeba93](https://github.com/parkerbxyz/json-to-markdown-table/commit/4aeba93a046e82a9bbb7397f5028cb54f39ea14e))
+
 ## [1.1.0](https://github.com/parkerbxyz/json-to-markdown-table/compare/v1.0.0...v1.1.0) (2024-03-14)
 
 
