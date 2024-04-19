@@ -11,3 +11,4 @@ permissions:
 jobs:
   release:
     uses: parkerbxyz/.github/.github/workflows/release.yml@main
+    secrets: inherit
