@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.2](https://github.com/parkerbxyz/json-to-markdown-table/compare/v1.1.1...v1.1.2) (2024-11-01)
+
+
+### Bug Fixes
+
+* **deps:** bump @actions/core from 1.10.1 to 1.11.1 ([#16](https://github.com/parkerbxyz/json-to-markdown-table/issues/16)) ([6700a35](https://github.com/parkerbxyz/json-to-markdown-table/commit/6700a357c0d879f60c501f0de9316d2440b8d250))
+* **deps:** bump mdast-util-to-markdown from 2.1.0 to 2.1.1 ([#17](https://github.com/parkerbxyz/json-to-markdown-table/issues/17)) ([c6aa8cc](https://github.com/parkerbxyz/json-to-markdown-table/commit/c6aa8cc44f74536cc9a8426244f414f85d1694aa))
+
 ## [1.1.1](https://github.com/parkerbxyz/json-to-markdown-table/compare/v1.1.0...v1.1.1) (2024-04-07)
 
 
