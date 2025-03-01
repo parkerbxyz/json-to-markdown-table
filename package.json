@@ -10,7 +10,7 @@
     "test": "ava"
   },
   "devDependencies": {
-    "@types/node": "^22.13.0",
+    "@types/node": "^22.13.8",
     "@vercel/ncc": "^0.38.3",
     "ava": "^6.2.0",
     "sinon": "^19.0.2",
