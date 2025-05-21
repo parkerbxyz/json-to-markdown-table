@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.1.3](https://github.com/parkerbxyz/json-to-markdown-table/compare/v1.1.2...v1.1.3) (2025-05-21)
+
+
+### Bug Fixes
+
+* **deps:** bump mdast-util-to-markdown from 2.1.1 to 2.1.2 ([#20](https://github.com/parkerbxyz/json-to-markdown-table/issues/20)) ([2f353b0](https://github.com/parkerbxyz/json-to-markdown-table/commit/2f353b03ff668ed5365987a0237fcc141835b565))
+* **deps:** bump undici from 5.28.4 to 5.28.5 in the npm_and_yarn group ([#23](https://github.com/parkerbxyz/json-to-markdown-table/issues/23)) ([a5fd73d](https://github.com/parkerbxyz/json-to-markdown-table/commit/a5fd73dd041fe27e46a70ea214da2c7bfd6e14fe))
+* **deps:** bump undici from 5.28.5 to 5.29.0 in the npm_and_yarn group ([#27](https://github.com/parkerbxyz/json-to-markdown-table/issues/27)) ([17441de](https://github.com/parkerbxyz/json-to-markdown-table/commit/17441dee3666df5d165d214b909ef2ef8c74ce41))
+
 ## [1.1.2](https://github.com/parkerbxyz/json-to-markdown-table/compare/v1.1.1...v1.1.2) (2024-11-01)
 
 
