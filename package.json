@@ -14,7 +14,7 @@
     "@vercel/ncc": "^0.38.3",
     "ava": "^6.3.0",
     "sinon": "^20.0.0",
-    "tmp": "^0.2.3"
+    "tmp": "^0.2.4"
   },
   "dependencies": {
     "@actions/core": "^1.11.1",
