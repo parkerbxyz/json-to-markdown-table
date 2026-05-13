@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.1.4](https://github.com/parkerbxyz/json-to-markdown-table/compare/v1.1.3...v1.1.4) (2026-05-13)
+
+
+### Bug Fixes
+
+* **deps:** bump @actions/core from 1.11.1 to 3.0.1 ([#46](https://github.com/parkerbxyz/json-to-markdown-table/issues/46)) ([f8a3bef](https://github.com/parkerbxyz/json-to-markdown-table/commit/f8a3bef76f3e42b0ea000ef9ee3f28467af3b958))
+* **deps:** bump picomatch ([#49](https://github.com/parkerbxyz/json-to-markdown-table/issues/49)) ([69f1656](https://github.com/parkerbxyz/json-to-markdown-table/commit/69f1656fcc77b27225fe2e3a47cdf745cd5c6e83))
+* run release please workflow ([#52](https://github.com/parkerbxyz/json-to-markdown-table/issues/52)) ([0c50b90](https://github.com/parkerbxyz/json-to-markdown-table/commit/0c50b90820b732955170271f82dc806c1a723fbf))
+
 ## [1.1.3](https://github.com/parkerbxyz/json-to-markdown-table/compare/v1.1.2...v1.1.3) (2025-05-21)
 
 
