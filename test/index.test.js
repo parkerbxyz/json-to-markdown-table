@@ -1,4 +1,4 @@
-import core from '@actions/core'
+import * as core from '@actions/core'
 import test from 'ava'
 import sinon from 'sinon'
 import tmp from 'tmp'

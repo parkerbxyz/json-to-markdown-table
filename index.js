@@ -1,5 +1,5 @@
 // @ts-check
-import core from '@actions/core'
+import * as core from '@actions/core'
 import { gfmTableToMarkdown } from 'mdast-util-gfm-table'
 import { toMarkdown } from 'mdast-util-to-markdown'
 
