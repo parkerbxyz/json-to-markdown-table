@@ -13,11 +13,11 @@
     "test": "ava"
   },
   "devDependencies": {
-    "@types/node": "^25.7.0",
+    "@types/node": "^25.9.1",
     "@vercel/ncc": "^0.38.4",
-    "ava": "^8.0.0",
+    "ava": "^8.0.1",
     "sinon": "^22.0.0",
-    "tmp": "^0.2.6"
+    "tmp": "^0.2.7"
   },
   "dependencies": {
     "@actions/core": "^3.0.1",
